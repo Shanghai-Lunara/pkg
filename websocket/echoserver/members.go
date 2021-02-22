@@ -2,6 +2,7 @@ package echoserver
 
 import (
 	"context"
+	"github.com/nevercase/lllidan/pkg/websocket/handler"
 )
 
 type members struct {
@@ -29,7 +30,12 @@ func (m *members) loop() {
 	}
 }
 
-func (m *members) newPlayer() *handler {
-	h := NewHandler(m.ctx, "", m.removedChan)
+func (m *members) newPlayer() handler.Interface {
+	h := handler.NewHandler(m.ctx, "", m.handler, m.removedChan)
 	return h
+}
+
+func (m *members) handler(in []byte, handler handler.Interface) (res []byte, err error) {
+	handler.Ping()
+	return in, nil
 }

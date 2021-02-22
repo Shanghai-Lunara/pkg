@@ -129,8 +129,8 @@ github.com/nevercase/k8s-controller-custom-resource v0.0.0-20200908053329-9c0d33
 github.com/nevercase/k8s-controller-custom-resource v0.0.0-20201008035539-143fcc5213b7/go.mod h1:Q0wgVUFpTtHAnv1FNib/MUsW1rJ8eRrQbJtFpyU6E74=
 github.com/nevercase/k8s-controller-custom-resource v0.0.0-20201208063622-ba3d36e38b1b h1:AbDpFT46FtOGSK8Lnw//pfGQ0BN1GKwtdmVPu9dcHRY=
 github.com/nevercase/k8s-controller-custom-resource v0.0.0-20201208063622-ba3d36e38b1b/go.mod h1:9F2tN3AqgtD81wLdsqu8F1hD956SL+vAaAD9BF1goZ0=
-github.com/nevercase/lllidan v0.0.0-20210207104500-0b4c842aa3f5 h1:/fQhpuWVOMYgRRdn7B8JFIvf5qbSmQRDWg7jxM9CUNA=
-github.com/nevercase/lllidan v0.0.0-20210207104500-0b4c842aa3f5/go.mod h1:9PaCypnDQ9qee2zBAygpfUmudhFZ/VmzDhhnM5HuRdU=
+github.com/nevercase/lllidan v0.0.0-20210222115913-085fe164cefe h1:aJK7ubOW97zPXLa9Tbr+3d0FsQJ2vifKD/udySvHkjk=
+github.com/nevercase/lllidan v0.0.0-20210222115913-085fe164cefe/go.mod h1:9PaCypnDQ9qee2zBAygpfUmudhFZ/VmzDhhnM5HuRdU=
 github.com/onsi/ginkgo v0.0.0-20170829012221-11459a886d9c/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
