@@ -305,6 +305,6 @@ func createStructMap() {
 		writeString = fmt.Sprintf("\t RegStruct[\"%s\"] = %s\n", val, name+"{}")
 		_, err1 = io.WriteString(f, writeString) //写入文件(字符串)
 	}
-	writeString = "}"
+	writeString = "\n\t return RegStruct \n}"
 	_, err1 = io.WriteString(f, writeString) //写入文件(字符串)
 }
