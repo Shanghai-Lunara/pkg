@@ -293,7 +293,7 @@ func createStructMap() {
 
 	f = CreateFile("structMap", "go", structDir)
 
-	_, err1 = io.WriteString(f, "package structure\n\nvar RegStruct = make(map[string]interface{})\n\nfunc InitStructMap() {\n") //写入文件(字符串)
+	_, err1 = io.WriteString(f, "package structure\n\nvar RegStruct = make(map[string]interface{})\n\nfunc InitStructMap() map[string]interface{} {\n") //写入文件(字符串)
 
 	defer f.Close()
 
