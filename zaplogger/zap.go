@@ -6,6 +6,7 @@ import (
 )
 
 var logger *zap.Logger
+var sugar *zap.SugaredLogger
 
 func init() {
 	var err error
@@ -13,6 +14,7 @@ func init() {
 	if err != nil {
 		log.Panic(err)
 	}
+	sugar = logger.Sugar()
 }
 
 func Sync() {
@@ -20,7 +22,7 @@ func Sync() {
 }
 
 func Sugar() *zap.SugaredLogger {
-	return logger.Sugar()
+	return sugar
 }
 
 func Logger() *zap.Logger {
