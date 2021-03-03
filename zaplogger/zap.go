@@ -76,5 +76,5 @@ func EpochTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	//nanos := t.UnixNano()
 	//sec := float64(nanos) / float64(time.Second)
 	//enc.AppendFloat64(sec)
-	enc.AppendString(t.Format("2006-01-02T15:04:05.000Z"))
+	enc.AppendString(t.Format("2006-01-02T15:04:05.000000Z"))
 }
