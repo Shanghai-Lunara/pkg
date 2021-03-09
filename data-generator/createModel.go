@@ -184,7 +184,7 @@ func GetFileMap(souDir string) map[string]*excelize.File {
 	var fileMap = map[string]*excelize.File{}
 
 	for _, file := range files {
-		if path.Ext(file.Name()) != ".xlsx" || path.Base(file.Name()) == "Character.xlsx" || path.Base(file.Name()) == "Error.xlsx" || path.Base(file.Name()) == "LanguageCN.xlsx" || path.Base(file.Name()) == "Calendar.xlsx" || path.Base(file.Name()) == "Plot.xlsx" || path.Base(file.Name()) == "Dialog.xlsx" {
+		if strings.HasPrefix(path.Base(file.Name()), "#") || path.Ext(file.Name()) != ".xlsx" || path.Base(file.Name()) == "Character.xlsx" || path.Base(file.Name()) == "Error.xlsx" || path.Base(file.Name()) == "LanguageCN.xlsx" || path.Base(file.Name()) == "Calendar.xlsx" || path.Base(file.Name()) == "Plot.xlsx" || path.Base(file.Name()) == "Dialog.xlsx" {
 			continue
 		} else {
 			f, err := excelize.OpenFile(souDir + "/" + file.Name())
