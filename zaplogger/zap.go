@@ -47,12 +47,12 @@ const (
 func NewProductionConfig() zap.Config {
 	encoding := os.Getenv(EnvZapEncoding)
 	switch encoding {
-	case "", EncodingJson:
-		encoding = EncodingJson
-	case EncodingConsole:
+	case "", EncodingConsole:
 		encoding = EncodingConsole
-	default:
+	case EncodingJson:
 		encoding = EncodingJson
+	default:
+		encoding = EncodingConsole
 	}
 	return zap.Config{
 		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
