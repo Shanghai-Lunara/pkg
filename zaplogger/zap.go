@@ -4,6 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
+	"os"
 	"time"
 )
 
@@ -31,12 +32,28 @@ func Logger() *zap.Logger {
 	return logger
 }
 
+const EnvZapEncoding = "ENV_ZAP_ENCODING"
+
+const (
+	EncodingJson    = "json"
+	EncodingConsole = "console"
+)
+
 // NewProductionConfig is a reasonable production logging configuration.
 // Logging is enabled at InfoLevel and above.
 //
 // It uses a JSON encoder, writes to standard error, and enables sampling.
 // Stacktraces are automatically included on logs of ErrorLevel and above.
 func NewProductionConfig() zap.Config {
+	encoding := os.Getenv(EnvZapEncoding)
+	switch encoding {
+	case "", EncodingJson:
+		encoding = EncodingJson
+	case EncodingConsole:
+		encoding = EncodingConsole
+	default:
+		encoding = EncodingJson
+	}
 	return zap.Config{
 		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
 		Development: false,
@@ -44,7 +61,7 @@ func NewProductionConfig() zap.Config {
 			Initial:    100,
 			Thereafter: 100,
 		},
-		Encoding:         "json",
+		Encoding:         encoding,
 		EncoderConfig:    NewProductionEncoderConfig(),
 		OutputPaths:      []string{"stderr"},
 		ErrorOutputPaths: []string{"stderr"},
