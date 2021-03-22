@@ -210,7 +210,7 @@ func createStructs() {
 	defer f.Close()
 
 	for i, val := range structMap {
-		name := strings.ToUpper(val[0:1]) + val[1:]
+		name := strings.Title(val)
 		writeString = fmt.Sprintf("\t%-25s %-35s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, "map[int32]*"+name, val, i+1, val)
 		_, err1 = io.WriteString(f, writeString) //写入文件(字符串)
 	}
@@ -225,11 +225,14 @@ func createData() {
 	var writeString string
 
 	f = CreateFile("data", "go", genGoFile)
-	_, err1 = io.WriteString(f, `package data
+	runPath, _ := os.Getwd()
+	projectName := path.Base(runPath)
+	mainTemplate := fmt.Sprintf(`package data
 
 import (
 	"encoding/json"
-	"github.com/Shanghai-Lunara/hamster-server/data/structure"
+	"github.com/Shanghai-Lunara/%s/data/structure"
+	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"io/ioutil"
 	"k8s.io/klog/v2"
 	"os"
@@ -243,14 +246,26 @@ type Data struct {
 }
 
 var directory string
-func NewData(dir string) *structure.Data {
+var dataManager *structure.Data
+
+func InitData(dir string) *structure.Data {
 	directory = dir
 	d := &Data{
 		cache: &structure.Data{},
 	}
 	d.runAll()
-	return d.cache
-}`) //写入文件头
+	dataManager = d.cache
+	return dataManager
+}
+
+func Get() *structure.Data {
+	if dataManager == nil {
+		zaplogger.Sugar().Fatal("error: nil dataManager, please call New() before Get()")
+	}
+	return dataManager
+}`, projectName)
+
+	_, err1 = io.WriteString(f, mainTemplate) //写入文件头
 
 	var loadTemplate = `
 
@@ -258,13 +273,13 @@ func (d *Data) load%s() {
 	f, err := os.Open(directory +"/%s.json")
 
 	if err != nil {
-		klog.Fatal(err)
+		zaplogger.Sugar().Fatal(err)
 	}
 	content, _ := ioutil.ReadAll(f)
-	var employeeArr map[int32]*structure.%s
-	json.Unmarshal(content, &employeeArr)
+	var tmp map[int32]*structure.%s
+	json.Unmarshal(content, &tmp)
 
-	d.cache.%s= employeeArr
+	d.cache.%s= tmp
 }`
 
 	var runAllTemplate = `
