@@ -20,7 +20,6 @@ const (
 	ALL
 )
 
-
 func NewDFAUtil(filePath string) *DFAUtil {
 	ut := &DFAUtil{
 		invalidWords:   make(map[string]interface{}),
@@ -100,14 +99,16 @@ func (dfaUtil *DFAUtil) AddWord(words []rune) {
 			//因为是之前没有出现过的分支，所以接下来会先将该分支加入到树中，然后再在这条新分支中进行操作
 			currNode.children[word] = tagetNode
 			currNode = tagetNode
+			currNode.isEnd = false
 		} else {
 			//之前出现过这个分支，所以接下来会进入这个旧的分支进行操作
 			currNode = tagetNode
 		}
 	}
-
 	//添加完毕
-	currNode.isEnd = true
+	if len(currNode.children) == 0 {
+		currNode.isEnd = true
+	}
 }
 
 //查看是否存在敏感词
