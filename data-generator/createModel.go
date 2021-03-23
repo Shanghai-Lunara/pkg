@@ -210,7 +210,7 @@ func createStructs() {
 	defer f.Close()
 
 	for i, val := range structMap {
-		name := strings.Title(val)
+		name := strings.ToUpper(val[0:1]) + val[1:]
 		writeString = fmt.Sprintf("\t%-25s %-35s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, "map[int32]*"+name, val, i+1, val)
 		_, err1 = io.WriteString(f, writeString) //写入文件(字符串)
 	}
