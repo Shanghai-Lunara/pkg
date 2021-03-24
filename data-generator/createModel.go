@@ -234,7 +234,6 @@ import (
 	"github.com/Shanghai-Lunara/%s/data/structure"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"io/ioutil"
-	"k8s.io/klog/v2"
 	"os"
 )
 
