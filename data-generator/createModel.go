@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -84,6 +85,7 @@ func Format(fileName string, arr [][]string, f *os.File) {
 
 	defer f.Close()
 
+	protoIndex := 1
 	for i := 0; i < len(arr[0]); i++ {
 		if arr[0][i] == "" {
 			break
@@ -96,8 +98,9 @@ func Format(fileName string, arr [][]string, f *os.File) {
 		jsonName := strings.ToLower(arr[0][i])
 		vname := returnName(jsonName)
 		tname := typeMap[arr[1][i]]
-		writeString = fmt.Sprintf("\t%-15s %-20s `json:\"%s\" protobuf:\"%s,%d,opt,name=%s\"`\n", vname, tname, jsonName, proMap[tname], i+1, jsonName)
+		writeString = fmt.Sprintf("\t%-15s %-20s `json:\"%s\" protobuf:\"%s,%d,opt,name=%s\"`\n", vname, tname, jsonName, proMap[tname], protoIndex, jsonName)
 		_, err1 = io.WriteString(f, writeString) //写入文件(字符串)
+		protoIndex += 1
 	}
 
 	writeString = "}"
@@ -160,6 +163,7 @@ func CreatModel(strDir, souDir, goFile, jsDir string) {
 		}
 		klog.Info(sheetName, "    end")
 	}
+	sort.Strings(structMap)
 	klog.Info("Create Model END")
 	klog.Info(structMap)
 
