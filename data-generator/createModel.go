@@ -251,7 +251,7 @@ type Data struct {
 var directory string
 var dataManager *structure.Data
 
-func InitData(dir string) *structure.Data {
+func NewData(dir string) *structure.Data {
 	directory = dir
 	d := &Data{
 		cache: &structure.Data{},
