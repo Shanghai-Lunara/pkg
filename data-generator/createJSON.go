@@ -263,12 +263,11 @@ func toListIntMap(str string) map[int32][]int32 {
 
 	tmp := strings.Split(str, ";")
 
-	var arr []int32
 	for _, val := range tmp {
 		tmp1 := strings.Split(val, ":")
 
 		value := strings.Split(tmp1[1], ",")
-
+		var arr []int32
 		for _, val := range value {
 			j, err := strconv.ParseInt(val, 10, 32)
 			if err != nil {
