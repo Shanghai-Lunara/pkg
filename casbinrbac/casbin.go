@@ -1,6 +1,7 @@
 package casbinrbac
 
 import (
+	"github.com/Shanghai-Lunara/pkg/jwttoken"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
@@ -40,7 +41,7 @@ const (
 	DeleteRoleForUser       = "/casbin/role/delete/:user/:namespace/:role"
 	ListPolicy              = "/casbin/policy/list"
 	ListGroupingPolicy      = "/casbin/groupingpolicy/list"
-	FilteredGroupingPolicy  = "/casbin/groupingpolicy/filter"
+	FilterGroupingPolicy    = "/casbin/groupingpolicy/filter"
 )
 
 func register(router *gin.RouterGroup) {
@@ -51,17 +52,22 @@ func register(router *gin.RouterGroup) {
 	router.GET(DeleteRoleForUser, rbac.DeleteRoleForUser)
 	router.GET(ListPolicy, rbac.ListPolicy)
 	router.GET(ListGroupingPolicy, rbac.ListGroupingPolicy)
-	router.GET(FilteredGroupingPolicy, rbac.ListGroupingPolicy)
+	router.GET(FilterGroupingPolicy, rbac.ListGroupingPolicy)
 }
 
 func (r *RBAC) auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := "admin"
+		tokenClaims, err := jwttoken.Parse(c.Request.Header.Get("Token"))
+		if err != nil {
+			zaplogger.Sugar().Error(err)
+			c.Abort()
+			return
+		}
 		switch c.FullPath() {
-		case FilteredGroupingPolicy:
+		case FilterGroupingPolicy:
 			c.Next()
 		default:
-			switch user {
+			switch tokenClaims.Username {
 			case "admin":
 				c.Next()
 			default:
@@ -158,7 +164,12 @@ func (r *RBAC) ListGroupingPolicy(c *gin.Context) {
 }
 
 func (r *RBAC) FilteredGroupingPolicy(c *gin.Context) {
-	t := r.e.GetFilteredGroupingPolicy(0, "user")
+	tokenClaims, err := jwttoken.Parse(c.Request.Header.Get("Token"))
+	if err != nil {
+		zaplogger.Sugar().Error(err)
+		return
+	}
+	t := r.e.GetFilteredGroupingPolicy(0, tokenClaims.Username)
 	p := make([]GroupingPolicy, 0)
 	for _, v := range t {
 		p = append(p, ConvertGroupingPolicy(v))
