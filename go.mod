@@ -7,6 +7,7 @@ require (
 	github.com/antlinker/go-cmap v0.0.0-20160407022646-0c5e57012e96
 	github.com/casbin/casbin/v2 v2.26.0
 	github.com/casbin/gorm-adapter/v3 v3.2.6
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/nevercase/k8s-controller-custom-resource v0.0.0-20201208063622-ba3d36e38b1b
