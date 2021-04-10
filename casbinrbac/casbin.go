@@ -52,7 +52,7 @@ func register(router *gin.RouterGroup) {
 	router.GET(DeleteRoleForUser, rbac.DeleteRoleForUser)
 	router.GET(ListPolicy, rbac.ListPolicy)
 	router.GET(ListGroupingPolicy, rbac.ListGroupingPolicy)
-	router.GET(FilterGroupingPolicy, rbac.ListGroupingPolicy)
+	router.GET(FilterGroupingPolicy, rbac.FilterGroupingPolicy)
 }
 
 func (r *RBAC) auth() gin.HandlerFunc {
@@ -163,7 +163,7 @@ func (r *RBAC) ListGroupingPolicy(c *gin.Context) {
 	})
 }
 
-func (r *RBAC) FilteredGroupingPolicy(c *gin.Context) {
+func (r *RBAC) FilterGroupingPolicy(c *gin.Context) {
 	tokenClaims, err := jwttoken.Parse(c.Request.Header.Get("Token"))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
