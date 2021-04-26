@@ -15,8 +15,29 @@ type RBAC struct {
 
 var rbac *RBAC
 
-func New(rulePath string, dsn string, router *gin.RouterGroup) *RBAC {
-	a, err := gormadapter.NewAdapter("mysql", dsn)
+func NewWithMysqlConf(rulePath string, mysqlConfPath string, router *gin.RouterGroup) *RBAC {
+	LoadMysqlConf(mysqlConfPath)
+	a, err := gormadapter.NewAdapter("dao", MasterDsn())
+	if err != nil {
+		zaplogger.Sugar().Fatal(err)
+	}
+	e, err := casbin.NewEnforcer(rulePath, a)
+	if err != nil {
+		zaplogger.Sugar().Fatal(err)
+	}
+	if err = e.LoadPolicy(); err != nil {
+		zaplogger.Sugar().Fatal(err)
+	}
+	rbac = &RBAC{
+		e: e,
+	}
+	register(router)
+	return rbac
+}
+
+
+func NewWithDsnString(rulePath string, dsn string, router *gin.RouterGroup) *RBAC {
+	a, err := gormadapter.NewAdapter("dao", dsn)
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
