@@ -30,7 +30,7 @@ type MysqlCluster struct {
 }
 
 type Mysql struct {
-	Mysql MysqlCluster `yaml:"mysql"`
+	Mysql MysqlCluster `yaml:"Mysql"`
 }
 
 var mysql *Mysql

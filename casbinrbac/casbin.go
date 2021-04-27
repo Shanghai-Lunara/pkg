@@ -17,7 +17,7 @@ var rbac *RBAC
 
 func NewWithMysqlConf(rulePath string, mysqlConfPath string, router *gin.RouterGroup) *RBAC {
 	LoadMysqlConf(mysqlConfPath)
-	a, err := gormadapter.NewAdapter("dao", MasterDsn())
+	a, err := gormadapter.NewAdapter("mysql", MasterDsn())
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
