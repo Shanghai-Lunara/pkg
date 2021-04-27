@@ -8,7 +8,12 @@ import (
 
 func Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenClaims, err := jwttoken.Parse(c.Request.Header.Get("Token"))
+		token := c.Request.Header.Get(jwttoken.TokenKey)
+		if token == "" {
+			c.Abort()
+			return
+		}
+		tokenClaims, err := jwttoken.Parse(token)
 		if err != nil {
 			zaplogger.Sugar().Error(err)
 			c.Abort()

@@ -13,5 +13,6 @@ require (
 	github.com/nevercase/k8s-controller-custom-resource v0.0.0-20201208063622-ba3d36e38b1b
 	github.com/nevercase/lllidan v0.0.0-20210222115913-085fe164cefe
 	go.uber.org/zap v1.16.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	k8s.io/klog/v2 v2.4.0
 )

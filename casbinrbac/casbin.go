@@ -78,7 +78,12 @@ func register(router *gin.RouterGroup) {
 
 func (r *RBAC) auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenClaims, err := jwttoken.Parse(c.Request.Header.Get("Token"))
+		token := c.Request.Header.Get(jwttoken.TokenKey)
+		if token == "" {
+			c.Abort()
+			return
+		}
+		tokenClaims, err := jwttoken.Parse(token)
 		if err != nil {
 			zaplogger.Sugar().Error(err)
 			c.Abort()
@@ -107,7 +112,7 @@ func (r *RBAC) boolResponse(c *gin.Context, code int, ok bool, msg string) {
 }
 
 func (r *RBAC) AddPermissionForRole(c *gin.Context) {
-	ok, err := r.e.AddPermissionForUser(c.Param("role"), c.Param("namespace"), c.Param("permission"), c.Param("action"))
+	ok, err := r.e.AddPermissionForUser(c.Param(Role), c.Param(Namespace), c.Param(Permission), c.Param(Action))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		r.boolResponse(c, CodeError, false, err.Error())
@@ -120,7 +125,7 @@ func (r *RBAC) AddPermissionForRole(c *gin.Context) {
 }
 
 func (r *RBAC) DeletePermissionForRole(c *gin.Context) {
-	ok, err := r.e.DeletePermissionForUser(c.Param("role"), c.Param("namespace"), c.Param("permission"), c.Param("action"))
+	ok, err := r.e.DeletePermissionForUser(c.Param(Role), c.Param(Namespace), c.Param(Permission), c.Param(Action))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		r.boolResponse(c, CodeError, false, err.Error())
@@ -133,7 +138,7 @@ func (r *RBAC) DeletePermissionForRole(c *gin.Context) {
 }
 
 func (r *RBAC) AddRoleForUser(c *gin.Context) {
-	ok, err := r.e.AddRoleForUser(c.Param("user"), c.Param("role"), c.Param("namespace"))
+	ok, err := r.e.AddRoleForUser(c.Param(User), c.Param(Role), c.Param(Namespace))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		r.boolResponse(c, CodeError, false, err.Error())
@@ -146,7 +151,7 @@ func (r *RBAC) AddRoleForUser(c *gin.Context) {
 }
 
 func (r *RBAC) DeleteRoleForUser(c *gin.Context) {
-	ok, err := r.e.DeleteRoleForUser(c.Param("user"), c.Param("role"), c.Param("namespace"))
+	ok, err := r.e.DeleteRoleForUser(c.Param(User), c.Param(Role), c.Param(Namespace))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		r.boolResponse(c, CodeError, false, err.Error())
@@ -185,7 +190,11 @@ func (r *RBAC) ListGroupingPolicy(c *gin.Context) {
 }
 
 func (r *RBAC) FilterGroupingPolicy(c *gin.Context) {
-	tokenClaims, err := jwttoken.Parse(c.Request.Header.Get("Token"))
+	token := c.Request.Header.Get(jwttoken.TokenKey)
+	if token == "" {
+		return
+	}
+	tokenClaims, err := jwttoken.Parse(token)
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		return
