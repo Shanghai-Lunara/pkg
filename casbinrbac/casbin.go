@@ -37,7 +37,7 @@ func NewWithMysqlConf(rulePath string, mysqlConfPath string, router *gin.RouterG
 
 
 func NewWithDsnString(rulePath string, dsn string, router *gin.RouterGroup) *RBAC {
-	a, err := gormadapter.NewAdapter("dao", dsn)
+	a, err := gormadapter.NewAdapter("mysql", dsn)
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
