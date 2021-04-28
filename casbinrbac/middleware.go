@@ -6,6 +6,7 @@ import (
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 func Handler() gin.HandlerFunc {
@@ -39,6 +40,6 @@ func FullPath(relativePath, suffixPath string) string {
 	if relativePath == "" || relativePath == "/" {
 		return suffixPath
 	} else {
-		return fmt.Sprintf("/%s%s", relativePath, suffixPath)
+		return strings.Replace(fmt.Sprintf("/%s%s", relativePath, suffixPath), "//", "/", -1)
 	}
 }
