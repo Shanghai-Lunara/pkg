@@ -88,6 +88,7 @@ func (a *Authentication) login(c *gin.Context) {
 	}
 	token, err := jwttoken.Generate(acc.Account)
 	if err != nil {
+		zaplogger.Sugar().Errorw("jwttoken.Generate", "req", req, "account", acc, "err", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
