@@ -9,7 +9,7 @@ import (
 func Query(db *sql.DB, account string) (Account, error) {
 	ac := &Account{}
 	if err := db.QueryRow("SELECT * FROM accounts WHERE account = ?", account).
-		Scan(&ac.Account, &ac.Password, &ac.CreateTime, &ac.Status); err != nil {
+		Scan(&ac.Id, &ac.Account, &ac.Password, &ac.CreateTime, &ac.Status); err != nil {
 		zaplogger.Sugar().Error(err)
 		return *ac, err
 	}
@@ -25,7 +25,7 @@ func List(db *sql.DB) ([]Account, error) {
 	res := make([]Account, 0)
 	for rows.Next() {
 		ac := &Account{}
-		if err := rows.Scan(&ac.Account, &ac.Password, &ac.CreateTime, &ac.Status); err != nil {
+		if err := rows.Scan(&ac.Id, &ac.Account, &ac.Password, &ac.CreateTime, &ac.Status); err != nil {
 			zaplogger.Sugar().Error(err)
 			return nil, err
 		}
@@ -44,17 +44,17 @@ func Add(db *sql.DB, account, password string) error {
 }
 
 func ResetPassword(db *sql.DB, account, password string) error {
-	if _, err := db.Query("UPDATE accounts SET password = ? WHERE account = ? AND status = ?",
-		password, account, Active); err != nil {
+	if _, err := db.Query("UPDATE accounts SET password = ? WHERE account = ?",
+		password, account); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}
 	return nil
 }
 
-func Disable(db *sql.DB, account string) error {
+func Operator(db *sql.DB, account string, status Status) error {
 	if _, err := db.Query("UPDATE accounts SET status = ? WHERE account = ?",
-		Inactive, account); err != nil {
+		status, account); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}

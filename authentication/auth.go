@@ -9,14 +9,16 @@ import (
 )
 
 type Authentication struct {
-	mysql *casbinrbac.MysqlClusterPool
+	relativePath string
+	mysql        *casbinrbac.MysqlClusterPool
 }
 
-func New(router *gin.RouterGroup) *Authentication {
+func New(relativePath string, router *gin.Engine) *Authentication {
 	authentication = &Authentication{
-		mysql: casbinrbac.GetMysqlCluster(),
+		relativePath: relativePath,
+		mysql:        casbinrbac.GetMysqlCluster(),
 	}
-	register(router)
+	register(router.Group(relativePath))
 	return authentication
 }
 
@@ -25,9 +27,10 @@ var authentication *Authentication
 const (
 	AuthAccountLogin   = "/account/login"
 	AuthAccountList    = "/account/list"
-	AuthAccountAdd     = "/account/add/:account/:pwd"
-	AuthAccountReset   = "/account/reset/:account/:pwd"
-	AuthAccountDisable = "/account/operator/:account"
+	AuthAccountAdd     = "/account/add"
+	AuthAccountReset   = "/account/reset"
+	AuthAccountDisable = "/account/disable/:account"
+	AuthAccountEnable  = "/account/enable/:account"
 )
 
 const (
@@ -40,13 +43,14 @@ func register(router *gin.RouterGroup) {
 	router.POST(AuthAccountLogin, authentication.login)
 	router.GET(AuthAccountList, authentication.list)
 	router.POST(AuthAccountAdd, authentication.add)
-	router.PUT(AuthAccountReset, authentication.reset)
+	router.POST(AuthAccountReset, authentication.reset)
 	router.GET(AuthAccountDisable, authentication.disable)
+	router.GET(AuthAccountEnable, authentication.enable)
 }
 
 func (a *Authentication) middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		switch c.FullPath() {
+		switch casbinrbac.FullPath(a.relativePath, c.FullPath()) {
 		case AuthAccountLogin:
 			c.Next()
 		default:
@@ -76,6 +80,7 @@ func (a *Authentication) login(c *gin.Context) {
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
+	zaplogger.Sugar().Info("req ", req)
 	acc, err := Query(a.mysql.Slave, req.Account)
 	if err != nil {
 		c.AbortWithStatus(http.StatusForbidden)
@@ -134,7 +139,15 @@ func (a *Authentication) disable(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if Disable(a.mysql.Master, req.Account) != nil {
+	if Operator(a.mysql.Master, c.Param(ParamAccount), Inactive) != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, &BoolResultResponse{Result: true})
+}
+
+func (a *Authentication) enable(c *gin.Context) {
+	if Operator(a.mysql.Master, c.Param(ParamAccount), Active) != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

@@ -8,6 +8,7 @@ const (
 )
 
 type Account struct {
+	Id         int    `json:"id"`
 	Account    string `json:"account"`
 	Password   string `json:"password"`
 	CreateTime int    `json:"create_time"`

@@ -1,6 +1,7 @@
 package casbinrbac
 
 import (
+	"fmt"
 	"github.com/Shanghai-Lunara/pkg/jwttoken"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"github.com/gin-gonic/gin"
@@ -31,5 +32,13 @@ func Handler() gin.HandlerFunc {
 		} else {
 			c.AbortWithStatus(http.StatusForbidden)
 		}
+	}
+}
+
+func FullPath(relativePath, suffixPath string) string {
+	if relativePath == "" || relativePath == "/" {
+		return suffixPath
+	} else {
+		return fmt.Sprintf("/%s%s", relativePath, suffixPath)
 	}
 }

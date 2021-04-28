@@ -10,12 +10,13 @@ import (
 )
 
 type RBAC struct {
-	e *casbin.Enforcer
+	relativePath string
+	e            *casbin.Enforcer
 }
 
 var rbac *RBAC
 
-func NewWithMysqlConf(rulePath string, mysqlConfPath string, router *gin.RouterGroup) *RBAC {
+func NewWithMysqlConf(rulePath string, mysqlConfPath string, relativePath string, router *gin.Engine) *RBAC {
 	LoadMysqlConf(mysqlConfPath)
 	a, err := gormadapter.NewAdapter("mysql", MasterDsn())
 	if err != nil {
@@ -29,14 +30,14 @@ func NewWithMysqlConf(rulePath string, mysqlConfPath string, router *gin.RouterG
 		zaplogger.Sugar().Fatal(err)
 	}
 	rbac = &RBAC{
-		e: e,
+		relativePath: relativePath,
+		e:            e,
 	}
-	register(router)
+	register(router.Group(relativePath))
 	return rbac
 }
 
-
-func NewWithDsnString(rulePath string, dsn string, router *gin.RouterGroup) *RBAC {
+func NewWithDsnString(rulePath string, dsn string, relativePath string, router *gin.Engine) *RBAC {
 	a, err := gormadapter.NewAdapter("mysql", dsn)
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
@@ -51,7 +52,7 @@ func NewWithDsnString(rulePath string, dsn string, router *gin.RouterGroup) *RBA
 	rbac = &RBAC{
 		e: e,
 	}
-	register(router)
+	register(router.Group(relativePath))
 	return rbac
 }
 
@@ -78,21 +79,21 @@ func register(router *gin.RouterGroup) {
 
 func (r *RBAC) auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get(jwttoken.TokenKey)
-		if token == "" {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		tokenClaims, err := jwttoken.Parse(token)
-		if err != nil {
-			zaplogger.Sugar().Error(err)
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		switch c.FullPath() {
+		switch FullPath(r.relativePath, c.FullPath()) {
 		case FilterGroupingPolicy:
 			c.Next()
 		default:
+			token := c.Request.Header.Get(jwttoken.TokenKey)
+			if token == "" {
+				c.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
+			tokenClaims, err := jwttoken.Parse(token)
+			if err != nil {
+				zaplogger.Sugar().Error(err)
+				c.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
 			switch tokenClaims.Username {
 			case "admin":
 				c.Next()
