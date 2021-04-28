@@ -92,5 +92,5 @@ func MasterDsn() string {
 	if mysql == nil {
 		zaplogger.Sugar().Fatal("error: nil Mysql, please call LoadMysqlConf() before")
 	}
-	return setDSNTimezone(fmt.Sprintf(DBDSNFormat, mysql.Mysql.Master.User, mysql.Mysql.Master.Password, mysql.Mysql.Master.Host, mysql.Mysql.Master.Port, mysql.Mysql.Master.Database))
+	return fmt.Sprintf(DBDSNFormat, mysql.Mysql.Master.User, mysql.Mysql.Master.Password, mysql.Mysql.Master.Host, mysql.Mysql.Master.Port, mysql.Mysql.Master.Database)
 }
