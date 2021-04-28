@@ -25,8 +25,9 @@ var authentication *Authentication
 const (
 	AuthAccountLogin   = "/account/login"
 	AuthAccountList    = "/account/list"
-	AuthAccount        = "/account/:account/:pwd"
-	AuthAccountDisable = "/account/:account"
+	AuthAccountAdd     = "/account/add/:account/:pwd"
+	AuthAccountReset   = "/account/reset/:account/:pwd"
+	AuthAccountDisable = "/account/operator/:account"
 )
 
 const (
@@ -38,8 +39,8 @@ func register(router *gin.RouterGroup) {
 	router.Use(authentication.middleware())
 	router.POST(AuthAccountLogin, authentication.login)
 	router.GET(AuthAccountList, authentication.list)
-	router.POST(AuthAccount, authentication.add)
-	router.PUT(AuthAccount, authentication.reset)
+	router.POST(AuthAccountAdd, authentication.add)
+	router.PUT(AuthAccountReset, authentication.reset)
 	router.GET(AuthAccountDisable, authentication.disable)
 }
 
