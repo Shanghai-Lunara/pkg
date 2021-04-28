@@ -6,14 +6,6 @@ import (
 	"time"
 )
 
-//[GIN-debug] GET    /rbac/account/login
-//[GIN-debug] GET    /rbac/account/list
-//[GIN-debug] POST   /rbac/account/:account/:pwd
-//[GIN-debug] PUT    /rbac/account/:account/:pwd
-//[GIN-debug] Delete /rbac/account/:account
-
-//var db *sql.DB
-
 func Query(db *sql.DB, account string) (Account, error) {
 	ac := &Account{}
 	if err := db.QueryRow("SELECT * FROM accounts WHERE account = ?", account).
