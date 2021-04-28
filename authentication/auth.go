@@ -70,21 +70,71 @@ func (a *Authentication) middleware() gin.HandlerFunc {
 }
 
 func (a *Authentication) login(c *gin.Context) {
-	//a.mysql.Slave
+	req := &LoginRequest{}
+	if c.ShouldBindJSON(req) != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+	acc, err := Query(a.mysql.Slave, req.Account)
+	if err != nil {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	token, err := jwttoken.Generate(acc.Account)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, &LoginResponse{Token: token})
 }
 
 func (a *Authentication) list(c *gin.Context) {
-	//a.mysql.Master
+	accountList, err := List(a.mysql.Slave)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, &ListResponse{
+		Items:    accountList,
+	})
 }
 
 func (a *Authentication) add(c *gin.Context) {
-
+	req := AccountRequest{}
+	if c.ShouldBindJSON(req) != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if Add(a.mysql.Master, req.Account, req.Password) != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, &BoolResultResponse{
+		Result: true,
+	})
 }
 
 func (a *Authentication) reset(c *gin.Context) {
-
+	req := AccountRequest{}
+	if c.ShouldBindJSON(req) != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if ResetPassword(a.mysql.Master, req.Account, req.Password) != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, &BoolResultResponse{Result: true})
 }
 
 func (a *Authentication) disable(c *gin.Context) {
-
+	req := &DisableRequest{}
+	if c.ShouldBindJSON(req) != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if Disable(a.mysql.Master, req.Account) != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, &BoolResultResponse{Result: true})
 }
