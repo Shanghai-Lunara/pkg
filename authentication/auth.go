@@ -50,8 +50,8 @@ func register(router *gin.RouterGroup) {
 
 func (a *Authentication) middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		switch casbinrbac.FullPath(a.relativePath, c.FullPath()) {
-		case AuthAccountLogin:
+		switch c.FullPath() {
+		case casbinrbac.FullPath(a.relativePath, AuthAccountLogin):
 			c.Next()
 		default:
 			token := c.Request.Header.Get(jwttoken.TokenKey)

@@ -79,8 +79,8 @@ func register(router *gin.RouterGroup) {
 
 func (r *RBAC) auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		switch FullPath(r.relativePath, c.FullPath()) {
-		case FilterGroupingPolicy:
+		switch c.FullPath() {
+		case FullPath(r.relativePath, FilterGroupingPolicy):
 			c.Next()
 		default:
 			token := c.Request.Header.Get(jwttoken.TokenKey)
