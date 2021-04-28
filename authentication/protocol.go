@@ -39,11 +39,15 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-type ResetRequest struct {
+type AccountRequest struct {
 	Account  string `json:"account"`
 	Password string `json:"password"`
 }
 
 type ResetResponse struct {
 	BoolResultResponse
+}
+
+type DisableRequest struct {
+	Account string `json:"account"`
 }
