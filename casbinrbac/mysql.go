@@ -1,12 +1,14 @@
 package casbinrbac
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"net/url"
 	"os"
+	"time"
 )
 
 const (
@@ -33,6 +35,24 @@ type Mysql struct {
 	Mysql MysqlCluster `yaml:"Mysql"`
 }
 
+type MysqlClusterPool struct {
+	Master *sql.DB
+	Slave  *sql.DB
+}
+
+func newMysqlPool(v *MysqlConfig) *sql.DB {
+	dsn := fmt.Sprintf(DBDSNFormat, v.User, v.Password, v.Host, v.Port, v.Database)
+	db, err := sql.Open("mysql", setDSNTimezone(dsn))
+	if err != nil {
+		zaplogger.Sugar().Errorw("newMysqlPool failed", "err", err)
+		return nil
+	}
+	db.SetMaxIdleConns(v.MaxIdleConns)
+	db.SetMaxOpenConns(v.MaxOpenConns)
+	db.SetConnMaxLifetime(time.Second * time.Duration(v.ConnMaxLifetime))
+	return db
+}
+
 var mysql *Mysql
 
 func LoadMysqlConf(configFile string) {
@@ -44,6 +64,16 @@ func LoadMysqlConf(configFile string) {
 	}
 	if err := yaml.Unmarshal(data, mysql); err != nil {
 		zaplogger.Sugar().Fatal(err)
+	}
+}
+
+func GetMysqlCluster() *MysqlClusterPool {
+	if mysql == nil {
+		zaplogger.Sugar().Fatal("error: nil Mysql, please call casbinrbac.LoadMysqlConf(configFile string) before")
+	}
+	return &MysqlClusterPool{
+		Master: newMysqlPool(&mysql.Mysql.Master),
+		Slave:  newMysqlPool(&mysql.Mysql.Slave),
 	}
 }
 

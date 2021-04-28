@@ -1,12 +1,21 @@
 package authentication
 
 import (
+	"github.com/Shanghai-Lunara/pkg/casbinrbac"
 	"github.com/Shanghai-Lunara/pkg/jwttoken"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"github.com/gin-gonic/gin"
 )
 
 type Authentication struct {
+	mysql *casbinrbac.MysqlClusterPool
+}
+
+func New() *Authentication {
+	authentication = &Authentication{
+		mysql: casbinrbac.GetMysqlCluster(),
+	}
+	return authentication
 }
 
 var authentication *Authentication
@@ -60,11 +69,11 @@ func (a *Authentication) middleware() gin.HandlerFunc {
 }
 
 func (a *Authentication) login(c *gin.Context) {
-
+	//a.mysql.Slave
 }
 
 func (a *Authentication) list(c *gin.Context) {
-
+	//a.mysql.Master
 }
 
 func (a *Authentication) add(c *gin.Context) {
