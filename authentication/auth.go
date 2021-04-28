@@ -5,6 +5,7 @@ import (
 	"github.com/Shanghai-Lunara/pkg/jwttoken"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Authentication struct {
@@ -45,13 +46,13 @@ func (a *Authentication) middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get(jwttoken.TokenKey)
 		if token == "" {
-			c.Abort()
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		tokenClaims, err := jwttoken.Parse(token)
 		if err != nil {
 			zaplogger.Sugar().Error(err)
-			c.Abort()
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		switch c.FullPath() {
@@ -62,7 +63,7 @@ func (a *Authentication) middleware() gin.HandlerFunc {
 			case "admin":
 				c.Next()
 			default:
-				c.Abort()
+				c.AbortWithStatus(http.StatusForbidden)
 			}
 		}
 	}
