@@ -23,10 +23,10 @@ func New(router *gin.RouterGroup) *Authentication {
 var authentication *Authentication
 
 const (
-	AuthAccountLogin   = "/auth/account/login"
-	AuthAccountList    = "/auth/account/list"
-	AuthAccount        = "/auth/account/:account/:pwd"
-	AuthAccountDisable = "/auth/account/:account"
+	AuthAccountLogin   = "/account/login"
+	AuthAccountList    = "/account/list"
+	AuthAccount        = "/account/:account/:pwd"
+	AuthAccountDisable = "/account/:account"
 )
 
 const (
@@ -95,7 +95,7 @@ func (a *Authentication) list(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, &ListResponse{
-		Items:    accountList,
+		Items: accountList,
 	})
 }
 
