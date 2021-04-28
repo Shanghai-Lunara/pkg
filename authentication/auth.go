@@ -12,10 +12,11 @@ type Authentication struct {
 	mysql *casbinrbac.MysqlClusterPool
 }
 
-func New() *Authentication {
+func New(router *gin.RouterGroup) *Authentication {
 	authentication = &Authentication{
 		mysql: casbinrbac.GetMysqlCluster(),
 	}
+	register(router)
 	return authentication
 }
 
