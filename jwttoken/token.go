@@ -3,6 +3,7 @@ package jwttoken
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"os"
 	"time"
 )
 
@@ -14,8 +15,10 @@ type Claims struct {
 }
 
 const TokenExpiredTimeInSecond = 3600
-const SecretSalt = "Lunara-secret"
+const SecretSalt = "Lunara-Secret"
 const Issuer = "Lunara-Issue"
+
+var secretKey interface{}
 
 func Generate(username string) (string, error) {
 	now := time.Now()
@@ -34,12 +37,12 @@ func Generate(username string) (string, error) {
 		},
 	}
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return tokenClaims.SignedString(SecretSalt)
+	return tokenClaims.SignedString(GetSecretKeyFromEnv())
 }
 
 func Parse(token string) (*Claims, error) {
 	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return SecretSalt, nil
+		return GetSecretKeyFromEnv(), nil
 	})
 	if err != nil {
 		return nil, err
@@ -48,4 +51,17 @@ func Parse(token string) (*Claims, error) {
 		return claims, nil
 	}
 	return nil, fmt.Errorf("failed vaild tokenClaims:%#v", tokenClaims)
+}
+
+func GetSecretKeyFromEnv() interface{} {
+	if secretKey != nil {
+		return secretKey
+	}
+	secretKey = []byte(SecretSalt)
+	key := os.Getenv(SecretSalt)
+	if key == "" {
+		return secretKey
+	}
+	secretKey = []byte(key)
+	return secretKey
 }
