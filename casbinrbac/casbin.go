@@ -7,9 +7,11 @@ import (
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"sync"
 )
 
 type RBAC struct {
+	mu           sync.Mutex
 	relativePath string
 	e            *casbin.Enforcer
 }
@@ -113,6 +115,8 @@ func (r *RBAC) boolResponse(c *gin.Context, code int, ok bool, msg string) {
 }
 
 func (r *RBAC) AddPermissionForRole(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	ok, err := r.e.AddPermissionForUser(c.Param(Role), c.Param(Namespace), c.Param(Permission), c.Param(Action))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -126,6 +130,8 @@ func (r *RBAC) AddPermissionForRole(c *gin.Context) {
 }
 
 func (r *RBAC) DeletePermissionForRole(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	ok, err := r.e.DeletePermissionForUser(c.Param(Role), c.Param(Namespace), c.Param(Permission), c.Param(Action))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -139,6 +145,8 @@ func (r *RBAC) DeletePermissionForRole(c *gin.Context) {
 }
 
 func (r *RBAC) AddRoleForUser(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	ok, err := r.e.AddRoleForUser(c.Param(User), c.Param(Role), c.Param(Namespace))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -152,6 +160,8 @@ func (r *RBAC) AddRoleForUser(c *gin.Context) {
 }
 
 func (r *RBAC) DeleteRoleForUser(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	ok, err := r.e.DeleteRoleForUser(c.Param(User), c.Param(Role), c.Param(Namespace))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -165,6 +175,8 @@ func (r *RBAC) DeleteRoleForUser(c *gin.Context) {
 }
 
 func (r *RBAC) ListPolicy(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	t := r.e.GetPolicy()
 	p := make([]Policy, 0)
 	for _, v := range t {
@@ -178,6 +190,8 @@ func (r *RBAC) ListPolicy(c *gin.Context) {
 }
 
 func (r *RBAC) ListGroupingPolicy(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	t := r.e.GetGroupingPolicy()
 	p := make([]GroupingPolicy, 0)
 	for _, v := range t {
@@ -191,6 +205,8 @@ func (r *RBAC) ListGroupingPolicy(c *gin.Context) {
 }
 
 func (r *RBAC) FilterGroupingPolicy(c *gin.Context) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	token := c.Request.Header.Get(jwttoken.TokenKey)
 	if token == "" {
 		return
@@ -220,6 +236,8 @@ func (r *RBAC) save() {
 
 // "alice", "namespace1",  "data1", "read"
 func Enforce(userOrRole string, namespace string, object string, action string) (bool, error) {
+	rbac.mu.Lock()
+	defer rbac.mu.Unlock()
 	if rbac == nil {
 		zaplogger.Sugar().Fatal("error: nil RBAC, please call New() before Enforce()")
 	}
