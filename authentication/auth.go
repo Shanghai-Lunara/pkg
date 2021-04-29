@@ -80,7 +80,6 @@ func (a *Authentication) login(c *gin.Context) {
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
-	zaplogger.Sugar().Info("req ", req)
 	acc, err := Query(a.mysql.Slave, req.Account)
 	if err != nil {
 		c.AbortWithStatus(http.StatusForbidden)
@@ -107,7 +106,7 @@ func (a *Authentication) list(c *gin.Context) {
 }
 
 func (a *Authentication) add(c *gin.Context) {
-	req := AccountRequest{}
+	req := &AccountRequest{}
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -122,7 +121,7 @@ func (a *Authentication) add(c *gin.Context) {
 }
 
 func (a *Authentication) reset(c *gin.Context) {
-	req := AccountRequest{}
+	req := &AccountRequest{}
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -135,11 +134,6 @@ func (a *Authentication) reset(c *gin.Context) {
 }
 
 func (a *Authentication) disable(c *gin.Context) {
-	req := &DisableRequest{}
-	if c.ShouldBindJSON(req) != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
 	if Operator(a.mysql.Master, c.Param(ParamAccount), Inactive) != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
