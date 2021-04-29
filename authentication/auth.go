@@ -80,7 +80,7 @@ func (a *Authentication) login(c *gin.Context) {
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
-	acc, err := Query(a.mysql.Slave, req.Account)
+	acc, err := Query(a.mysql.Slave, req.Account, req.Password)
 	if err != nil {
 		c.AbortWithStatus(http.StatusForbidden)
 		return

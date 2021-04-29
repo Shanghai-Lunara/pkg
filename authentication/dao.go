@@ -6,9 +6,13 @@ import (
 	"time"
 )
 
-func Query(db *sql.DB, account string) (Account, error) {
+func appendPasswordSalt(pwd string) string {
+	return pwd
+}
+
+func Query(db *sql.DB, account, password string) (Account, error) {
 	ac := &Account{}
-	if err := db.QueryRow("SELECT * FROM accounts WHERE account = ?", account).
+	if err := db.QueryRow("SELECT * FROM accounts WHERE account = ? AND password = ?", account, appendPasswordSalt(password)).
 		Scan(&ac.Id, &ac.Account, &ac.Password, &ac.CreateTime, &ac.Status); err != nil {
 		zaplogger.Sugar().Error(err)
 		return *ac, err
@@ -36,7 +40,7 @@ func List(db *sql.DB) ([]Account, error) {
 
 func Add(db *sql.DB, account, password string) error {
 	if _, err := db.Exec("INSERT INTO accounts (`account`,`password`,`createTime`,`status`) values (?,?,?,?)",
-		account, password, time.Now().Unix(), Active); err != nil {
+		account, appendPasswordSalt(password), time.Now().Unix(), Active); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}
@@ -45,7 +49,7 @@ func Add(db *sql.DB, account, password string) error {
 
 func ResetPassword(db *sql.DB, account, password string) error {
 	if _, err := db.Query("UPDATE accounts SET password = ? WHERE account = ?",
-		password, account); err != nil {
+		appendPasswordSalt(password), account); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}
