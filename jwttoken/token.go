@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -15,10 +16,12 @@ type Claims struct {
 }
 
 const TokenExpiredTimeInSecond = 3600
-const SecretSalt = "Lunara-Secret"
+const TokenExpiration = "TOKEN_EXPIRATION"
+const SecretSalt = "LUNARA_SECRET"
 const Issuer = "Lunara-Issue"
 
 var secretKey interface{}
+var tokenExpiration int64
 
 func Generate(username string) (string, error) {
 	now := time.Now()
@@ -28,7 +31,7 @@ func Generate(username string) (string, error) {
 		IsAdmin:  true,
 		StandardClaims: jwt.StandardClaims{
 			Audience:  "",
-			ExpiresAt: now.Add(time.Second * TokenExpiredTimeInSecond).Unix(),
+			ExpiresAt: now.Add(time.Second * time.Duration(GetTokenExpirationFromEnv())).Unix(),
 			Id:        "",
 			IssuedAt:  now.Unix(),
 			Issuer:    Issuer,
@@ -64,4 +67,21 @@ func GetSecretKeyFromEnv() interface{} {
 	}
 	secretKey = []byte(key)
 	return secretKey
+}
+
+func GetTokenExpirationFromEnv() int64 {
+	if tokenExpiration != 0 {
+		return tokenExpiration
+	}
+	tokenExpiration = TokenExpiredTimeInSecond
+	key := os.Getenv(TokenExpiration)
+	if key == "" {
+		return tokenExpiration
+	}
+	t, err := strconv.Atoi(key)
+	if err != nil {
+		return tokenExpiration
+	}
+	tokenExpiration = int64(t)
+	return tokenExpiration
 }
