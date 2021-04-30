@@ -81,21 +81,21 @@ func register(router *gin.RouterGroup) {
 
 func (r *RBAC) auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		token := c.Request.Header.Get(jwttoken.TokenKey)
+		if token == "" {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		tokenClaims, err := jwttoken.Parse(token)
+		if err != nil {
+			zaplogger.Sugar().Error(err)
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 		switch c.FullPath() {
 		case FullPath(r.relativePath, FilterGroupingPolicy):
 			c.Next()
 		default:
-			token := c.Request.Header.Get(jwttoken.TokenKey)
-			if token == "" {
-				c.AbortWithStatus(http.StatusUnauthorized)
-				return
-			}
-			tokenClaims, err := jwttoken.Parse(token)
-			if err != nil {
-				zaplogger.Sugar().Error(err)
-				c.AbortWithStatus(http.StatusUnauthorized)
-				return
-			}
 			switch tokenClaims.Username {
 			case "admin":
 				c.Next()
