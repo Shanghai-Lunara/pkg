@@ -23,12 +23,12 @@ const Issuer = "Lunara-Issue"
 var secretKey interface{}
 var tokenExpiration int64
 
-func Generate(username string) (string, error) {
+func Generate(username string, isAdmin bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserId:   0,
 		Username: username,
-		IsAdmin:  true,
+		IsAdmin:  isAdmin,
 		StandardClaims: jwt.StandardClaims{
 			Audience:  "",
 			ExpiresAt: now.Add(time.Second * time.Duration(GetTokenExpirationFromEnv())).Unix(),

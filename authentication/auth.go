@@ -75,6 +75,15 @@ func (a *Authentication) middleware() gin.HandlerFunc {
 	}
 }
 
+func IsAdmin(username string) bool {
+	switch username {
+	case "admin":
+		return true
+	default:
+		return false
+	}
+}
+
 func (a *Authentication) login(c *gin.Context) {
 	req := &LoginRequest{}
 	if c.ShouldBindJSON(req) != nil {
@@ -85,7 +94,7 @@ func (a *Authentication) login(c *gin.Context) {
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
-	token, err := jwttoken.Generate(acc.Account)
+	token, err := jwttoken.Generate(acc.Account, IsAdmin(acc.Account))
 	if err != nil {
 		zaplogger.Sugar().Errorw("jwttoken.Generate", "req", req, "account", acc, "err", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
