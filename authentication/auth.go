@@ -100,7 +100,7 @@ func (a *Authentication) login(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, &LoginResponse{Token: token})
+	c.JSON(http.StatusOK, &LoginResponse{Token: token, IsAdmin: IsAdmin(acc.Account)})
 }
 
 func (a *Authentication) list(c *gin.Context) {

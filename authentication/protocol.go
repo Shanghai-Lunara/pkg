@@ -37,7 +37,8 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	Response
-	Token string `json:"token"`
+	Token   string `json:"token"`
+	IsAdmin bool   `json:"is_admin"`
 }
 
 type AccountRequest struct {
