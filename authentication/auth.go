@@ -65,8 +65,8 @@ func (a *Authentication) middleware() gin.HandlerFunc {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			switch tokenClaims.Username {
-			case "admin":
+			switch tokenClaims.IsAdmin {
+			case true:
 				c.Next()
 			default:
 				c.AbortWithStatus(http.StatusForbidden)

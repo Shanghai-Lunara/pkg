@@ -97,8 +97,8 @@ func (r *RBAC) auth() gin.HandlerFunc {
 		case FullPath(r.relativePath, RouterFilterGroupingPolicy):
 			c.Next()
 		default:
-			switch tokenClaims.Username {
-			case "admin":
+			switch tokenClaims.IsAdmin {
+			case true:
 				c.Next()
 			default:
 				c.AbortWithStatus(http.StatusForbidden)
