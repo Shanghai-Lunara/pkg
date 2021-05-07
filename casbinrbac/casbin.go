@@ -14,7 +14,7 @@ import (
 type RBAC struct {
 	mu           sync.RWMutex
 	relativePath string
-	e            *casbin.Enforcer
+	e            *casbin.DistributedEnforcer
 }
 
 var rbac *RBAC
@@ -25,7 +25,7 @@ func NewWithMysqlConf(rulePath string, mysqlConfPath string, relativePath string
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
-	e, err := casbin.NewEnforcer(rulePath, a)
+	e, err := casbin.NewDistributedEnforcer(rulePath, a)
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
@@ -45,7 +45,7 @@ func NewWithDsnString(rulePath string, dsn string, relativePath string, router *
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
-	e, err := casbin.NewEnforcer(rulePath, a)
+	e, err := casbin.NewDistributedEnforcer(rulePath, a)
 	if err != nil {
 		zaplogger.Sugar().Fatal(err)
 	}
