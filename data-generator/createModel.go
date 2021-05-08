@@ -33,6 +33,7 @@ var typeMap = map[string]string{
 	"Dictionary<int,List<float>>":  "map[int32][]float32",
 	"Dictionary<int,int>":          "map[int32]int32",
 	"Dictionary<int,string>":       "map[int32]string",
+	"Dictionary<int,float>":        "map[int32]float32",
 }
 
 // go 转 protobuf tag type
