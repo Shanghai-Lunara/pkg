@@ -86,6 +86,10 @@ Loop:
 				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toIntMap(row[i])))
 			case "map[int32]string":
 				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toStringMap(row[i])))
+			case "map[int32][]float32":
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toListFloatMap(row[i])))
+			case "map[int32]float32":
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toFloatMap(row[i])))
 			}
 
 			j++
@@ -209,9 +213,12 @@ func toIntMap(str string) map[int32]int32 {
 	tmp := strings.Split(str, ";")
 
 	for _, val := range tmp {
+		if val == "" {
+			continue
+		}
 		tmp1 := strings.Split(val, ":")
 
-		j, err := strconv.ParseInt(val, 10, 32)
+		j, err := strconv.ParseInt(tmp1[1], 10, 32)
 		if err != nil {
 			klog.Fatal(err)
 		}
@@ -254,6 +261,38 @@ func toListStringMap(str string) map[int32][]string {
 	return ret
 }
 
+// 转化成map[int32]float32
+func toFloatMap(str string) map[int32]float32 {
+	var ret = make(map[int32]float32)
+	if str == "" {
+		return ret
+	}
+
+	tmp := strings.Split(str, ";")
+
+	for _, val := range tmp {
+		if val == "" {
+			continue
+		}
+		tmp1 := strings.Split(val, ":")
+
+		j, err := strconv.ParseFloat(tmp1[1], 10)
+		if err != nil {
+			klog.Fatal(err)
+		}
+
+		index, err := strconv.ParseInt(tmp1[0], 10, 32)
+		if err != nil {
+			klog.Fatal(err)
+		}
+
+		ret[int32(index)] = float32(j)
+
+	}
+
+	return ret
+}
+
 // 转化成map[int32][]int32
 func toListIntMap(str string) map[int32][]int32 {
 	var ret = make(map[int32][]int32)
@@ -274,6 +313,40 @@ func toListIntMap(str string) map[int32][]int32 {
 				klog.Fatal(err)
 			}
 			arr = append(arr, int32(j))
+		}
+
+		index, err := strconv.ParseInt(tmp1[0], 10, 32)
+		if err != nil {
+			klog.Fatal(err)
+		}
+
+		ret[int32(index)] = arr
+
+	}
+
+	return ret
+}
+
+// 转化成map[int32][]float32
+func toListFloatMap(str string) map[int32][]float32 {
+	var ret = make(map[int32][]float32)
+	if str == "" {
+		return ret
+	}
+
+	tmp := strings.Split(str, ";")
+
+	for _, val := range tmp {
+		tmp1 := strings.Split(val, ":")
+
+		value := strings.Split(tmp1[1], ",")
+		var arr []float32
+		for _, val := range value {
+			j, err := strconv.ParseFloat(val, 10)
+			if err != nil {
+				klog.Fatal(err)
+			}
+			arr = append(arr, float32(j))
 		}
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
