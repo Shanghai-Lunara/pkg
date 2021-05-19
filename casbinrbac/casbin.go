@@ -116,8 +116,8 @@ func (r *RBAC) boolResponse(c *gin.Context, code int, ok bool, msg string) {
 }
 
 func (r *RBAC) AddPermissionForRoleHandler(c *gin.Context) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	//r.mu.Lock()
+	//defer r.mu.Unlock()
 	ok, err := r.e.AddPermissionForUser(c.Param(Role), c.Param(Namespace), c.Param(Permission), c.Param(Action))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -131,8 +131,8 @@ func (r *RBAC) AddPermissionForRoleHandler(c *gin.Context) {
 }
 
 func (r *RBAC) DeletePermissionForRoleHandler(c *gin.Context) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	//r.mu.Lock()
+	//defer r.mu.Unlock()
 	ok, err := r.e.DeletePermissionForUser(c.Param(Role), c.Param(Namespace), c.Param(Permission), c.Param(Action))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -146,8 +146,8 @@ func (r *RBAC) DeletePermissionForRoleHandler(c *gin.Context) {
 }
 
 func (r *RBAC) AddRoleForUserHandler(c *gin.Context) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	//r.mu.Lock()
+	//defer r.mu.Unlock()
 	ok, err := r.e.AddRoleForUser(c.Param(User), c.Param(Role), c.Param(Namespace))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -161,8 +161,8 @@ func (r *RBAC) AddRoleForUserHandler(c *gin.Context) {
 }
 
 func (r *RBAC) DeleteRoleForUserHandler(c *gin.Context) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	//r.mu.Lock()
+	//defer r.mu.Unlock()
 	ok, err := r.e.DeleteRoleForUser(c.Param(User), c.Param(Role), c.Param(Namespace))
 	if err != nil {
 		zaplogger.Sugar().Error(err)
@@ -176,8 +176,8 @@ func (r *RBAC) DeleteRoleForUserHandler(c *gin.Context) {
 }
 
 func ListPolicy() []Policy {
-	rbac.mu.RLock()
-	defer rbac.mu.RUnlock()
+	//rbac.mu.RLock()
+	//defer rbac.mu.RUnlock()
 	t := rbac.e.GetPolicy()
 	p := make([]Policy, 0)
 	for _, v := range t {
@@ -187,8 +187,8 @@ func ListPolicy() []Policy {
 }
 
 func (r *RBAC) ListPolicyHandler(c *gin.Context) {
-	rbac.mu.RLock()
-	defer rbac.mu.RUnlock()
+	//rbac.mu.RLock()
+	//defer rbac.mu.RUnlock()
 	t := r.e.GetPolicy()
 	p := make([]Policy, 0)
 	for _, v := range t {
@@ -202,8 +202,8 @@ func (r *RBAC) ListPolicyHandler(c *gin.Context) {
 }
 
 func ListGroupingPolicy() []GroupingPolicy {
-	rbac.mu.RLock()
-	defer rbac.mu.RUnlock()
+	//rbac.mu.RLock()
+	//defer rbac.mu.RUnlock()
 	t := rbac.e.GetGroupingPolicy()
 	p := make([]GroupingPolicy, 0)
 	for _, v := range t {
@@ -221,8 +221,8 @@ func (r *RBAC) ListGroupingPolicyHandler(c *gin.Context) {
 }
 
 func ListFilterGroupingPolicy(username string) []GroupingPolicy {
-	rbac.mu.RLock()
-	defer rbac.mu.RUnlock()
+	//rbac.mu.RLock()
+	//defer rbac.mu.RUnlock()
 	t := rbac.e.GetFilteredGroupingPolicy(0, username)
 	p := make([]GroupingPolicy, 0)
 	for _, v := range t {
@@ -256,8 +256,8 @@ func (r *RBAC) save() {
 
 // "alice", "namespace1",  "data1", "read"
 func Enforce(userOrRole string, namespace string, object string, action string) (bool, error) {
-	rbac.mu.RLock()
-	defer rbac.mu.RUnlock()
+	//rbac.mu.RLock()
+	//defer rbac.mu.RUnlock()
 	if rbac == nil {
 		zaplogger.Sugar().Fatal("error: nil RBAC, please call New() before Enforce()")
 	}
