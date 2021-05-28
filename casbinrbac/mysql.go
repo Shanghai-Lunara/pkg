@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DBDSNFormat = "%s:%s@tcp(%s:%d)/%s?timeout=5s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8mb4,utf8"
+	DBDSNFormat = "%s:%s@tcp(%s:%d)/%s?timeout=30s&readTimeout=30s&writeTimeout=30s&parseTime=true&loc=Local&charset=utf8mb4,utf8"
 	//dsn = fmt.Sprintf("%s:%s@%s/%s?timeout=30s", user, pass, netAddr, dbname)
 )
 
