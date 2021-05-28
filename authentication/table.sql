@@ -16,3 +16,4 @@ create table accounts (
 
 alter table accounts add index idx1(`account`);
 
+insert into accounts (`account`, `password`, `createTime`, `status`) value ('admin', '123456', 1622183330, 0);
