@@ -137,7 +137,7 @@ func (a *Authentication) reset(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if ResetPassword(a.mysql.Master, req.Account, req.Password) != nil {
+	if ResetPassword(a.mysql.Master, req.Account, req.Password, req.Roles) != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

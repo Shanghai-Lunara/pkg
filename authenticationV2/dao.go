@@ -44,17 +44,28 @@ func List(db *sql.DB) ([]Account, error) {
 }
 
 func Add(db *sql.DB, account, password string, roles []string) error {
+
+	str := ""
+	if len(roles) != 0 {
+		str = strings.Join(roles, ",")
+	}
+
 	if _, err := db.Exec("INSERT INTO accounts (`account`,`password`,`routers`,`createTime`,`status`) values (?,?,?,?,?)",
-		account, appendPasswordSalt(password), strings.Join(roles, ","), time.Now().Unix(), Active); err != nil {
+		account, appendPasswordSalt(password), str, time.Now().Unix(), Active); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}
 	return nil
 }
 
-func ResetPassword(db *sql.DB, account, password string) error {
-	if _, err := db.Exec("UPDATE accounts SET password = ? WHERE account = ?",
-		appendPasswordSalt(password), account); err != nil {
+func ResetPassword(db *sql.DB, account, password string, roles []string) error {
+	str := ""
+	if len(roles) != 0 {
+		str = strings.Join(roles, ",")
+	}
+
+	if _, err := db.Exec("UPDATE accounts SET password = ?, routers = ? WHERE account = ?",
+		appendPasswordSalt(password), str, account); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}
