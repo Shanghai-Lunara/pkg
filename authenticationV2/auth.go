@@ -122,7 +122,7 @@ func (a *Authentication) add(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if Add(a.mysql.Master, req.Account, req.Password) != nil {
+	if Add(a.mysql.Master, req.Account, req.Password, req.Roles) != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

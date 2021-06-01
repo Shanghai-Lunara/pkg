@@ -3,6 +3,7 @@ package authentication
 import (
 	"database/sql"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,7 @@ func Query(db *sql.DB, account, password string) (Account, error) {
 
 func List(db *sql.DB) ([]Account, error) {
 	rows, err := db.Query("SELECT * FROM accounts WHERE 1 ORDER BY id ASC")
+	defer rows.Close()
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		return nil, err
@@ -33,14 +35,17 @@ func List(db *sql.DB) ([]Account, error) {
 			zaplogger.Sugar().Error(err)
 			return nil, err
 		}
+
+		ac.RoutersList = strings.Split(ac.Routers, ",")
+
 		res = append(res, *ac)
 	}
 	return res, nil
 }
 
-func Add(db *sql.DB, account, password string) error {
-	if _, err := db.Exec("INSERT INTO accounts (`account`,`password`,`createTime`,`status`) values (?,?,?,?)",
-		account, appendPasswordSalt(password), time.Now().Unix(), Active); err != nil {
+func Add(db *sql.DB, account, password string, roles []string) error {
+	if _, err := db.Exec("INSERT INTO accounts (`account`,`password`,`routers`,`createTime`,`status`) values (?,?,?,?,?)",
+		account, appendPasswordSalt(password), strings.Join(roles, ","), time.Now().Unix(), Active); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
 	}
@@ -48,7 +53,7 @@ func Add(db *sql.DB, account, password string) error {
 }
 
 func ResetPassword(db *sql.DB, account, password string) error {
-	if _, err := db.Query("UPDATE accounts SET password = ? WHERE account = ?",
+	if _, err := db.Exec("UPDATE accounts SET password = ? WHERE account = ?",
 		appendPasswordSalt(password), account); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err
@@ -57,7 +62,7 @@ func ResetPassword(db *sql.DB, account, password string) error {
 }
 
 func Operator(db *sql.DB, account string, status Status) error {
-	if _, err := db.Query("UPDATE accounts SET status = ? WHERE account = ?",
+	if _, err := db.Exec("UPDATE accounts SET status = ? WHERE account = ?",
 		status, account); err != nil {
 		zaplogger.Sugar().Error(err)
 		return err

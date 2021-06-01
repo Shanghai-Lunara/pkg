@@ -8,12 +8,13 @@ const (
 )
 
 type Account struct {
-	Id         int    `json:"id"`
-	Account    string `json:"account"`
-	Password   string `json:"password"`
-	Routers    string `json:"routers"`
-	CreateTime int    `json:"create_time"`
-	Status     Status `json:"status"`
+	Id          int      `json:"id"`
+	Account     string   `json:"account"`
+	Password    string   `json:"password"`
+	Routers     string   `json:"routers"`
+	RoutersList []string `json:"routersList"`
+	CreateTime  int      `json:"create_time"`
+	Status      Status   `json:"status"`
 }
 
 type Response struct {
@@ -44,8 +45,9 @@ type LoginResponse struct {
 }
 
 type AccountRequest struct {
-	Account  string `json:"account"`
-	Password string `json:"password"`
+	Account  string   `json:"account"`
+	Password string   `json:"password"`
+	Roles    []string `json:"roles"`
 }
 
 type ResetResponse struct {
