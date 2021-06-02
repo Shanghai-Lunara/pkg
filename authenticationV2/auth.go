@@ -12,7 +12,7 @@ import (
 type Authentication struct {
 	relativePath string
 	mysql        *casbinrbac.MysqlClusterPool
-	RouterList   []string
+	RouterList   map[string][]string
 }
 
 func New(relativePath string, router *gin.Engine) *Authentication {
@@ -103,7 +103,8 @@ func (a *Authentication) login(c *gin.Context) {
 		return
 	}
 
-	a.RouterList = strings.Split(acc.Routers, ",")
+	a.RouterList = make(map[string][]string)
+	a.RouterList[acc.Account] = strings.Split(acc.Routers, ",")
 
 	c.JSON(http.StatusOK, &LoginResponse{Token: token, IsAdmin: IsAdmin(acc.Account), Routers: strings.Split(acc.Routers, ",")})
 }
@@ -153,7 +154,7 @@ func (a *Authentication) reset(c *gin.Context) {
 		return
 	}
 
-	a.RouterList = req.Roles
+	a.RouterList[req.Account] = req.Roles
 
 	c.JSON(http.StatusOK, &BoolResultResponse{Result: true})
 }
