@@ -12,6 +12,7 @@ import (
 type Authentication struct {
 	relativePath string
 	mysql        *casbinrbac.MysqlClusterPool
+	RouterList   []string
 }
 
 func New(relativePath string, router *gin.Engine) *Authentication {
@@ -102,6 +103,8 @@ func (a *Authentication) login(c *gin.Context) {
 		return
 	}
 
+	a.RouterList = strings.Split(acc.Routers, ",")
+
 	c.JSON(http.StatusOK, &LoginResponse{Token: token, IsAdmin: IsAdmin(acc.Account), Routers: strings.Split(acc.Routers, ",")})
 }
 
@@ -122,8 +125,16 @@ func (a *Authentication) add(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
+	if req.Account == "" || req.Password == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
 	if Add(a.mysql.Master, req.Account, req.Password, req.Roles) != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.JSON(http.StatusOK, &BoolResultResponse{
+			Result: false,
+		})
 		return
 	}
 	c.JSON(http.StatusOK, &BoolResultResponse{
@@ -138,9 +149,12 @@ func (a *Authentication) reset(c *gin.Context) {
 		return
 	}
 	if ResetPassword(a.mysql.Master, req.Account, req.Password, req.Roles) != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.JSON(http.StatusOK, &BoolResultResponse{Result: false})
 		return
 	}
+
+	a.RouterList = req.Roles
+
 	c.JSON(http.StatusOK, &BoolResultResponse{Result: true})
 }
 
