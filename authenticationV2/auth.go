@@ -7,9 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 type Authentication struct {
+	sync.Mutex
 	relativePath string
 	mysql        *casbinrbac.MysqlClusterPool
 	RouterList   map[string][]string
@@ -87,6 +89,8 @@ func IsAdmin(username string) bool {
 }
 
 func (a *Authentication) login(c *gin.Context) {
+	a.Lock()
+	defer a.Unlock()
 	req := &LoginRequest{}
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -144,6 +148,8 @@ func (a *Authentication) add(c *gin.Context) {
 }
 
 func (a *Authentication) reset(c *gin.Context) {
+	a.Lock()
+	defer a.Unlock()
 	req := &AccountRequest{}
 	if c.ShouldBindJSON(req) != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
