@@ -1,7 +1,7 @@
 package authentication
 
 import (
-	"github.com/Shanghai-Lunara/pkg/casbinrbac"
+	"fmt"
 	"github.com/Shanghai-Lunara/pkg/jwttoken"
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"github.com/gin-gonic/gin"
@@ -13,14 +13,14 @@ import (
 type Authentication struct {
 	sync.Mutex
 	relativePath string
-	mysql        *casbinrbac.MysqlClusterPool
+	mysql        *MysqlClusterPool
 	RouterList   map[string][]string
 }
 
 func New(relativePath string, router *gin.Engine) *Authentication {
 	authentication = &Authentication{
 		relativePath: relativePath,
-		mysql:        casbinrbac.GetMysqlCluster(),
+		mysql:        GetMysqlCluster(),
 	}
 	register(router.Group(relativePath))
 	return authentication
@@ -55,7 +55,7 @@ func register(router *gin.RouterGroup) {
 func (a *Authentication) middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		switch c.FullPath() {
-		case casbinrbac.FullPath(a.relativePath, AuthAccountLogin):
+		case fullPath(a.relativePath, AuthAccountLogin):
 			c.Next()
 		default:
 			token := c.Request.Header.Get(jwttoken.TokenKey)
@@ -179,4 +179,12 @@ func (a *Authentication) enable(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, &BoolResultResponse{Result: true})
+}
+
+func fullPath(relativePath, suffixPath string) string {
+	if relativePath == "" || relativePath == "/" {
+		return suffixPath
+	} else {
+		return strings.Replace(fmt.Sprintf("/%s%s", relativePath, suffixPath), "//", "/", -1)
+	}
 }
