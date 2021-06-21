@@ -78,6 +78,8 @@ Loop:
 			case "[]float32":
 				tmp := toStringSlice(row[i])
 				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toFloatSlice(tmp)))
+			case "[]string":
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toStringSlice(row[i])))
 			case "map[int32][]int32":
 				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toListIntMap(row[i])))
 			case "map[int32][]string":
