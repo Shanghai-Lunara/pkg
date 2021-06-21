@@ -100,6 +100,12 @@ func (a *Authentication) login(c *gin.Context) {
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
+
+	if acc.Status == 1 {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
 	token, err := jwttoken.Generate(acc.Account, IsAdmin(acc.Account))
 	if err != nil {
 		zaplogger.Sugar().Errorw("jwttoken.Generate", "req", req, "account", acc, "err", err)
