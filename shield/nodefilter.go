@@ -124,9 +124,6 @@ func (nf *nodeFilter) FilterReaderResult(reader io.Reader, excludes ...rune) (ma
 			}
 			break
 		}
-		if !unicode.IsLetter(ur) && !unicode.IsNumber(ur){
-			continue
-		}
 		if nf.checkExclude(ur, excludes...) {
 			continue
 		}
