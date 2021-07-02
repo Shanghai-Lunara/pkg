@@ -124,7 +124,7 @@ func (nf *nodeFilter) FilterReaderResult(reader io.Reader, excludes ...rune) (ma
 			}
 			break
 		}
-		if ur >=32 && ur <=126 && !unicode.IsLetter(ur) && !unicode.IsNumber(ur){
+		if !unicode.IsLetter(ur) && !unicode.IsNumber(ur){
 			continue
 		}
 		if nf.checkExclude(ur, excludes...) {
