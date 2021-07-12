@@ -20,7 +20,7 @@ var (
 )
 
 // xlsx 类型转 go
-var typeMap = map[string]string{
+var TypeMap = map[string]string{
 	"int":                          "int32",
 	"string":                       "string",
 	"float":                        "float32",
@@ -98,7 +98,7 @@ func Format(fileName string, arr [][]string, f *os.File) {
 
 		jsonName := strings.ToLower(arr[0][i])
 		vname := returnName(jsonName)
-		tname := typeMap[arr[1][i]]
+		tname := TypeMap[arr[1][i]]
 		writeString = fmt.Sprintf("\t%-15s %-20s `json:\"%s\" protobuf:\"%s,%d,opt,name=%s\"`\n", vname, tname, jsonName, proMap[tname], protoIndex, jsonName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 		protoIndex += 1
@@ -194,6 +194,7 @@ func GetFileMap(souDir string) map[string]*excelize.File {
 		} else {
 			f, err := excelize.OpenFile(souDir + "/" + file.Name())
 			if err != nil {
+				klog.Info(file.Name())
 				klog.Fatal(err)
 			}
 			sheetName := getSheet(file.Name())
