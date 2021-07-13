@@ -30,10 +30,6 @@ func (c Client) SendGroupMsg(group int64, content string) (*BotCallBack, error) 
 	return c.send(ApiSendMsg, msg)
 }
 
-func (c Client) SendPanicMsg(group int64, project, server, errMsg, stackTrace string) {
-	c.SendGroupMsg(group, fmt.Sprintf(TmpErrMsg, project, server, errMsg, stackTrace))
-}
-
 func (c *Client) send(api string, msg Message) (*BotCallBack, error) {
 
 	url := fmt.Sprintf("%s:%d/%s?%s", c.addr, c.port, api, msg.ToQueryString())
