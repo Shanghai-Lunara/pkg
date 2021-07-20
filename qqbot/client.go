@@ -6,6 +6,7 @@ import (
 	"github.com/Shanghai-Lunara/pkg/zaplogger"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type Client struct {
@@ -32,15 +33,25 @@ func (c Client) SendGroupMsg(group int64, content string) (*BotCallBack, error) 
 
 func (c *Client) send(api string, msg Message) (*BotCallBack, error) {
 
-	url := fmt.Sprintf("%s:%d/%s?%s", c.addr, c.port, api, msg.ToQueryString())
-	method := "GET"
+	url := fmt.Sprintf("http://%s:%d/%s", c.addr, c.port, api)
+	method := "POST"
+
+	payloadData, err := json.Marshal(msg)
+	if err != nil {
+		zaplogger.Sugar().Error(err)
+		return nil, err
+	}
+	payload := strings.NewReader(string(payloadData))
+
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
 		zaplogger.Sugar().Error(err)
 		return nil, err
 	}
+	req.Header.Add("Content-Type", "application/json")
+
 	res, err := client.Do(req)
 	if err != nil {
 		zaplogger.Sugar().Error(err)

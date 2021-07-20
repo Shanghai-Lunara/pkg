@@ -54,6 +54,21 @@ func (m *Msg) Text(text string) *Msg {
 	return m
 }
 
+// Textln 文本
+func (m *Msg) Textln(text string) *Msg {
+	// todo support color
+	m.str.WriteString(text)
+	m.str.WriteString("\n")
+	return m
+}
+
+// Text 文本
+func (m *Msg) Textf(format string, a ...interface{}) *Msg {
+	// todo support color
+	m.str.WriteString(fmt.Sprintf(format, a...))
+	return m
+}
+
 // At @某人
 // qq @的 QQ 号, <=0 表示全体成员
 func (m *Msg) At(qq int64) *Msg {
