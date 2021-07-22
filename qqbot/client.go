@@ -14,14 +14,14 @@ type Client struct {
 	port int
 }
 
-func NewClient(addr string, port int) Client {
-	return Client{
+func NewClient(addr string, port int) *Client {
+	return &Client{
 		addr: addr,
 		port: port,
 	}
 }
 
-func (c Client) SendGroupMsg(group int64, content string) (*BotCallBack, error) {
+func (c *Client) SendGroupMsg(group int64, content string) (*BotCallBack, error) {
 	msg := SendMsg{
 		MessageType: "group",
 		GroupId:     group,
