@@ -10,14 +10,16 @@ import (
 )
 
 type Client struct {
-	addr string
-	port int
+	addr  string
+	port  int
+	token string
 }
 
-func NewClient(addr string, port int) *Client {
+func NewClient(addr string, port int, token string) *Client {
 	return &Client{
-		addr: addr,
-		port: port,
+		addr:  addr,
+		port:  port,
+		token: token,
 	}
 }
 
@@ -34,6 +36,9 @@ func (c *Client) SendGroupMsg(group int64, content string) (*BotCallBack, error)
 func (c *Client) send(api string, msg Message) (*BotCallBack, error) {
 
 	url := fmt.Sprintf("http://%s:%d/%s", c.addr, c.port, api)
+	if c.token != "" {
+		url += "?access_token=" + c.token
+	}
 	method := "POST"
 
 	payloadData, err := json.Marshal(msg)
