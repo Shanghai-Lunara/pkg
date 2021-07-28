@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	jsonDir string
+	jsonDir   string
 	structure map[string]interface{}
 )
 
@@ -62,7 +62,7 @@ Loop:
 			field := getType.Field(j)
 			switch field.Type.String() {
 			case "int32":
-				parseInt, _ := strconv.ParseInt(row[i], 10, 64)
+				parseInt := ToInt(row[i])
 				if i == 0 {
 					id = int32(parseInt)
 				}
@@ -70,28 +70,27 @@ Loop:
 			case "string":
 				newValue.FieldByName(field.Name).SetString(row[i])
 			case "float32":
-				parseFloat, _ := strconv.ParseFloat(row[i], 32)
-				newValue.FieldByName(field.Name).SetFloat(parseFloat)
+				newValue.FieldByName(field.Name).SetFloat(ToFloat(row[i]))
 			case "[]int32":
-				tmp := toStringSlice(row[i])
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toIntSlice(tmp)))
+				tmp := ToStringSlice(row[i])
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToIntSlice(tmp)))
 			case "[]float32":
-				tmp := toStringSlice(row[i])
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toFloatSlice(tmp)))
+				tmp := ToStringSlice(row[i])
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToFloatSlice(tmp)))
 			case "[]string":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toStringSlice(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToStringSlice(row[i])))
 			case "map[int32][]int32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toListIntMap(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToListIntMap(row[i])))
 			case "map[int32][]string":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toListStringMap(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToListStringMap(row[i])))
 			case "map[int32]int32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toIntMap(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToIntMap(row[i])))
 			case "map[int32]string":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toStringMap(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToStringMap(row[i])))
 			case "map[int32][]float32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toListFloatMap(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToListFloatMap(row[i])))
 			case "map[int32]float32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(toFloatMap(row[i])))
+				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToFloatMap(row[i])))
 			}
 
 			j++
@@ -136,8 +135,18 @@ func CreateJSON(jsDir, souDir string, s map[string]interface{}) {
 	klog.Info("Create JSON END")
 }
 
+func ToInt(str string) int64 {
+	parseInt, _ := strconv.ParseInt(str, 10, 64)
+	return parseInt
+}
+
+func ToFloat(str string) float64 {
+	parseFloat, _ := strconv.ParseFloat(str, 32)
+	return parseFloat
+}
+
 // 格式化成[]string
-func toStringSlice(str string) []string {
+func ToStringSlice(str string) []string {
 	if str == "" {
 		return make([]string, 0)
 	}
@@ -148,7 +157,7 @@ func toStringSlice(str string) []string {
 }
 
 // 将[]string 转化成 []int32
-func toIntSlice(str []string) []int32 {
+func ToIntSlice(str []string) []int32 {
 	var ret []int32
 	if len(str) == 0 {
 		return make([]int32, 0)
@@ -165,7 +174,7 @@ func toIntSlice(str []string) []int32 {
 }
 
 // 将[]string 转化成 []float32
-func toFloatSlice(str []string) []float32 {
+func ToFloatSlice(str []string) []float32 {
 	var ret []float32
 	if len(str) == 0 {
 		return make([]float32, 0)
@@ -182,7 +191,7 @@ func toFloatSlice(str []string) []float32 {
 }
 
 // 转化成map[int32]int32
-func toStringMap(str string) map[int32]string {
+func ToStringMap(str string) map[int32]string {
 	var ret = make(map[int32]string)
 	if str == "" {
 		return ret
@@ -206,7 +215,7 @@ func toStringMap(str string) map[int32]string {
 }
 
 // 转化成map[int32]int32
-func toIntMap(str string) map[int32]int32 {
+func ToIntMap(str string) map[int32]int32 {
 	var ret = make(map[int32]int32)
 	if str == "" {
 		return ret
@@ -238,7 +247,7 @@ func toIntMap(str string) map[int32]int32 {
 }
 
 // 转化成map[int32][]string
-func toListStringMap(str string) map[int32][]string {
+func ToListStringMap(str string) map[int32][]string {
 	var ret = make(map[int32][]string)
 	if str == "" {
 		return ret
@@ -264,7 +273,7 @@ func toListStringMap(str string) map[int32][]string {
 }
 
 // 转化成map[int32]float32
-func toFloatMap(str string) map[int32]float32 {
+func ToFloatMap(str string) map[int32]float32 {
 	var ret = make(map[int32]float32)
 	if str == "" {
 		return ret
@@ -296,7 +305,7 @@ func toFloatMap(str string) map[int32]float32 {
 }
 
 // 转化成map[int32][]int32
-func toListIntMap(str string) map[int32][]int32 {
+func ToListIntMap(str string) map[int32][]int32 {
 	var ret = make(map[int32][]int32)
 	if str == "" {
 		return ret
@@ -330,7 +339,7 @@ func toListIntMap(str string) map[int32][]int32 {
 }
 
 // 转化成map[int32][]float32
-func toListFloatMap(str string) map[int32][]float32 {
+func ToListFloatMap(str string) map[int32][]float32 {
 	var ret = make(map[int32][]float32)
 	if str == "" {
 		return ret
