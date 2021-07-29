@@ -8,6 +8,7 @@ import (
 	"k8s.io/klog/v2"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -149,6 +150,17 @@ func CreatModel(strDir, souDir, goFile, jsDir string) {
 	jsonDir = jsDir
 
 	fileMap := GetFileMap(sourceDir)
+
+	filepath.Walk(structDir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		name := info.Name()
+		if _, ok := fileMap[name[:strings.LastIndex(name, ".")]]; !ok {
+			os.Remove(fmt.Sprintf("%s/%s", structDir, name))
+		}
+		return nil
+	})
 
 	klog.Info("Create Model START")
 	for sheetName, f := range fileMap {

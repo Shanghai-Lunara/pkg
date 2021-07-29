@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"k8s.io/klog/v2"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -109,6 +110,9 @@ func CreateJSON(jsDir, souDir string, s map[string]interface{}) {
 	jsonDir = jsDir
 
 	klog.Info("Create JSON START")
+
+	os.RemoveAll(jsonDir)
+
 	fileMap := GetFileMap(souDir)
 
 	for sheetName, f := range fileMap {
