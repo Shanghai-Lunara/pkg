@@ -158,6 +158,9 @@ func CreatModel(strDir, souDir, goFile, jsDir string) {
 		}
 		name := info.Name()
 		if _, ok := fileMap[name[:strings.LastIndex(name, ".")]]; !ok {
+			if name == "doc.go" {
+				return nil
+			}
 			os.Remove(fmt.Sprintf("%s/%s", structDir, name))
 		}
 		return nil
