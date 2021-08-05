@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 )
 
 var (
@@ -163,19 +164,25 @@ func CreatModel(strDir, souDir, goFile, jsDir string) {
 	})
 
 	klog.Info("Create Model START")
-	for sheetName, f := range fileMap {
-		klog.Info(sheetName, "    start")
-		rows, err := f.GetRows("Sheet1")
-		klog.Info("rows: ", rows[0:2])
-		// 生成 struct
-		ToStruct(sheetName, rows[0:2])
-		// 将filename 记录到structMap中
-		structMap = append(structMap, sheetName)
-		if err != nil {
-			klog.Fatal(err)
-		}
-		klog.Info(sheetName, "    end")
+	wg := sync.WaitGroup{}
+	wg.Add(len(fileMap))
+	for k, v := range fileMap {
+		go func(sheetName string, f *excelize.File) {
+			defer wg.Done()
+			klog.Info(sheetName, "    start")
+			rows, err := f.GetRows("Sheet1")
+			// 生成 struct
+			ToStruct(sheetName, rows[0:2])
+			// 将filename 记录到structMap中
+			structMap = append(structMap, sheetName)
+			if err != nil {
+				klog.Error("rows: ", rows[0:2])
+				klog.Fatal(err)
+			}
+			klog.Info(sheetName, "    end")
+		}(k, v)
 	}
+	wg.Wait()
 	sort.Strings(structMap)
 	klog.Info("Create Model END")
 	klog.Info(structMap)

@@ -2,13 +2,14 @@ package data_generator
 
 import (
 	"encoding/json"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"io"
 	"k8s.io/klog/v2"
-	"os"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var (
@@ -27,14 +28,12 @@ func newStruct(mod string) interface{} {
 func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 	var Employees = make(map[int32]interface{})
 
-Loop:
 	for _, row := range arr[4:] {
-		klog.Info(row, len(row))
 		if len(row) == 0 {
-			break Loop
+			break
 		}
 		if row[0] == "" {
-			break Loop
+			break
 		}
 
 		employee := newStruct(fileName)
@@ -110,32 +109,35 @@ func CreateJSON(jsDir, souDir string, s map[string]interface{}) {
 	jsonDir = jsDir
 
 	klog.Info("Create JSON START")
-
-	os.RemoveAll(jsonDir)
-
 	fileMap := GetFileMap(souDir)
+	wg := sync.WaitGroup{}
+	wg.Add(len(fileMap))
+	for k, v := range fileMap {
+		go func(sheetName string, f *excelize.File) {
+			defer wg.Done()
+			klog.Info(sheetName, "    start")
+			rows, err := f.GetRows("Sheet1")
+			if err != nil {
+				klog.Fatal(err)
+			}
+			//structure.InitStructMap()
+			// TODO 生成数据[]
+			temp := ToArray(sheetName, rows)
 
-	for sheetName, f := range fileMap {
-		klog.Info(sheetName, "    start")
-		rows, err := f.GetRows("Sheet1")
-		if err != nil {
-			klog.Fatal(err)
-		}
-		//structure.InitStructMap()
-		// TODO 生成数据[]
-		temp := ToArray(sheetName, rows)
+			// TODO 转换成JSON文件并存储
+			jsons, err := json.MarshalIndent(temp, "", "  ")
 
-		// TODO 转换成JSON文件并存储
-		jsons, err := json.MarshalIndent(temp, "", "  ")
+			ff := CreateFile(sheetName, "json", jsonDir)
+			_, err = io.WriteString(ff, string(jsons))
+			if err != nil {
+				klog.Fatal("file: ", sheetName, "err: ", err.Error())
+			}
+			ff.Close()
+			klog.Info(sheetName, "    end")
+		}(k, v)
 
-		f := CreateFile(sheetName, "json", jsonDir)
-		_, err = io.WriteString(f, string(jsons))
-		if err != nil {
-			klog.Fatal(err)
-		}
-		f.Close()
-		klog.Info(sheetName, "    end")
 	}
+	wg.Wait()
 	klog.Info("Create JSON END")
 }
 
