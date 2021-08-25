@@ -37,6 +37,7 @@ func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 		}
 
 		employee := newStruct(fileName)
+		klog.Info("start ", fileName)
 		//klog.Info("employee: ", employee)
 		//klog.Info("type employee: ", reflect.TypeOf(employee))
 		getType := reflect.TypeOf(employee)
