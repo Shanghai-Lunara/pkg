@@ -339,13 +339,16 @@ func createStructMap() {
 	defer f.Close()
 
 	klog.Info("structMap: ", structMap)
-
+	klog.Info(len(structMap))
 	for _, val := range structMap {
 		name := strings.ToUpper(val[0:1]) + val[1:]
-		klog.Info(name)
+		klog.Info(val)
 		writeString = fmt.Sprintf("\t RegStruct[\"%s\"] = %s\n", val, name+"{}")
-		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
+		if _, err := io.WriteString(f, writeString); err != nil {
+			klog.Error("write struct map fail. sheet: %s, err: %s", val, err.Error())
+		}
+
 	}
 	writeString = "\n\t return RegStruct \n}"
-	_, _ = io.WriteString(f, writeString) //写入文件(字符串)
+	_, _ = io.WriteString(f, writeString)
 }
