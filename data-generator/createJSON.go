@@ -320,6 +320,9 @@ func ToListIntMap(str string) map[int32][]int32 {
 	tmp := strings.Split(str, ";")
 
 	for _, val := range tmp {
+		if val == "" {
+			continue
+		}
 		tmp1 := strings.Split(val, ":")
 
 		value := strings.Split(tmp1[1], ",")
