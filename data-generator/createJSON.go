@@ -91,9 +91,10 @@ func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 			case "map[int32]float32":
 				value, err = ToFloatMap(rowValue)
 			}
-			klog.Infof("当前行: 表: %s\tid: %d\t列: %s\t值: %s", fileName, id, field.Name, rowValue)
+
 			if err != nil {
 				klog.Errorln(err)
+				klog.Errorf("当前行: 表: %s\tid: %d\t列: %s\t值: %s", fileName, id, field.Name, rowValue)
 				klog.Errorf("↑↑↑↑数值生成发生错误")
 				os.Exit(1)
 			}
