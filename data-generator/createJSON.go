@@ -2,14 +2,13 @@ package data_generator
 
 import (
 	"encoding/json"
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"io"
 	"k8s.io/klog/v2"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 var (
@@ -60,39 +59,45 @@ func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 			}
 
 			field := getType.Field(j)
+			var value interface{}
+			var err error = nil
+			rowValue := row[i]
 			switch field.Type.String() {
 			case "int32":
-				parseInt := ToInt(row[i])
+				value, err = ToInt(rowValue)
 				if i == 0 {
-					id = int32(parseInt)
+					id = value.(int32)
 				}
-				newValue.FieldByName(field.Name).SetInt(parseInt)
 			case "string":
-				newValue.FieldByName(field.Name).SetString(row[i])
+				value = row[i]
 			case "float32":
-				newValue.FieldByName(field.Name).SetFloat(ToFloat(row[i]))
+				value, err = ToFloat(rowValue)
 			case "[]int32":
-				tmp := ToStringSlice(row[i])
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToIntSlice(tmp)))
+				value, err = ToIntSlice(ToStringSlice(rowValue))
 			case "[]float32":
-				tmp := ToStringSlice(row[i])
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToFloatSlice(tmp)))
+				value, err = ToFloatSlice(ToStringSlice(rowValue))
 			case "[]string":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToStringSlice(row[i])))
+				value = ToStringSlice(rowValue)
 			case "map[int32][]int32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToListIntMap(row[i])))
+				value, err = ToListIntMap(rowValue)
 			case "map[int32][]string":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToListStringMap(row[i])))
+				value, err = ToListStringMap(rowValue)
 			case "map[int32]int32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToIntMap(row[i])))
+				value, err = ToIntMap(rowValue)
 			case "map[int32]string":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToStringMap(row[i])))
+				value, err = ToStringMap(rowValue)
 			case "map[int32][]float32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToListFloatMap(row[i])))
+				value, err = ToListFloatMap(rowValue)
 			case "map[int32]float32":
-				newValue.FieldByName(field.Name).Set(reflect.ValueOf(ToFloatMap(row[i])))
+				value, err = ToFloatMap(rowValue)
 			}
-
+			klog.Infof("当前行: 表: %s\tid: %d\t列: %s\t值: %s", fileName, id, field.Name, rowValue)
+			if err != nil {
+				klog.Errorln(err)
+				klog.Errorf("↑↑↑↑数值生成发生错误")
+				os.Exit(1)
+			}
+			newValue.FieldByName(field.Name).Set(reflect.ValueOf(value))
 			j++
 		}
 		getValue.Set(newValue)
@@ -110,45 +115,52 @@ func CreateJSON(jsDir, souDir string, s map[string]interface{}) {
 
 	klog.Info("Create JSON START")
 	fileMap := GetFileMap(souDir)
-	wg := sync.WaitGroup{}
-	wg.Add(len(fileMap))
-	for k, v := range fileMap {
-		go func(sheetName string, f *excelize.File) {
-			defer wg.Done()
-			klog.Info(sheetName, "    start")
-			rows, err := f.GetRows("Sheet1")
-			if err != nil {
-				klog.Fatal(err)
-			}
-			//structure.InitStructMap()
-			// TODO 生成数据[]
-			temp := ToArray(sheetName, rows)
+	for sheetName, f := range fileMap {
+		klog.Info(sheetName, "    start")
+		rows, err := f.GetRows("Sheet1")
+		if err != nil {
+			klog.Error(err)
+			klog.Errorf("表%s发生错误, 请确认存在Sheet1标签", sheetName)
+			klog.Fatal()
+		}
+		//structure.InitStructMap()
+		// TODO 生成数据[]
+		temp := ToArray(sheetName, rows)
 
-			// TODO 转换成JSON文件并存储
-			jsons, err := json.MarshalIndent(temp, "", "  ")
+		// TODO 转换成JSON文件并存储
+		jsons, err := json.MarshalIndent(temp, "", "  ")
 
-			ff := CreateFile(sheetName, "json", jsonDir)
-			_, err = io.WriteString(ff, string(jsons))
-			if err != nil {
-				klog.Fatal("file: ", sheetName, "err: ", err.Error())
-			}
-			ff.Close()
-			klog.Info(sheetName, "    end")
-		}(k, v)
-
+		ff := CreateFile(sheetName, "json", jsonDir)
+		_, err = io.WriteString(ff, string(jsons))
+		if err != nil {
+			klog.Fatal("file: ", sheetName, "err: ", err.Error())
+		}
+		ff.Close()
+		klog.Info(sheetName, "    end")
 	}
-	wg.Wait()
 	klog.Info("Create JSON END")
 }
 
-func ToInt(str string) int64 {
-	parseInt, _ := strconv.ParseInt(str, 10, 64)
-	return parseInt
+func ToInt(str string) (int32, error) {
+	if str == "" {
+		return 0, nil
+	}
+	i, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return int32(i), nil
 }
 
-func ToFloat(str string) float64 {
-	parseFloat, _ := strconv.ParseFloat(str, 32)
-	return parseFloat
+func ToFloat(str string) (float32, error) {
+	if str == "" {
+		return 0, nil
+	}
+	f, err := strconv.ParseFloat(str, 32)
+	if err != nil {
+		return 0, err
+	}
+	return float32(f), err
 }
 
 // 格式化成[]string
@@ -163,44 +175,44 @@ func ToStringSlice(str string) []string {
 }
 
 // 将[]string 转化成 []int32
-func ToIntSlice(str []string) []int32 {
+func ToIntSlice(str []string) ([]int32, error) {
 	var ret []int32
 	if len(str) == 0 {
-		return make([]int32, 0)
+		return make([]int32, 0), nil
 	}
 
 	for _, i := range str {
 		j, err := strconv.ParseInt(i, 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 		ret = append(ret, int32(j))
 	}
-	return ret
+	return ret, nil
 }
 
 // 将[]string 转化成 []float32
-func ToFloatSlice(str []string) []float32 {
+func ToFloatSlice(str []string) ([]float32, error) {
 	var ret []float32
 	if len(str) == 0 {
-		return make([]float32, 0)
+		return make([]float32, 0), nil
 	}
 
 	for _, i := range str {
 		j, err := strconv.ParseFloat(i, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 		ret = append(ret, float32(j))
 	}
-	return ret
+	return ret, nil
 }
 
 // 转化成map[int32]int32
-func ToStringMap(str string) map[int32]string {
+func ToStringMap(str string) (map[int32]string, error) {
 	var ret = make(map[int32]string)
 	if str == "" {
-		return ret
+		return ret, nil
 	}
 
 	tmp := strings.Split(str, ";")
@@ -210,21 +222,21 @@ func ToStringMap(str string) map[int32]string {
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		ret[int32(index)] = tmp1[1]
 
 	}
 
-	return ret
+	return ret, nil
 }
 
 // 转化成map[int32]int32
-func ToIntMap(str string) map[int32]int32 {
+func ToIntMap(str string) (map[int32]int32, error) {
 	var ret = make(map[int32]int32)
 	if str == "" {
-		return ret
+		return ret, nil
 	}
 
 	tmp := strings.Split(str, ";")
@@ -237,26 +249,26 @@ func ToIntMap(str string) map[int32]int32 {
 
 		j, err := strconv.ParseInt(tmp1[1], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		ret[int32(index)] = int32(j)
 
 	}
 
-	return ret
+	return ret, nil
 }
 
 // 转化成map[int32][]string
-func ToListStringMap(str string) map[int32][]string {
+func ToListStringMap(str string) (map[int32][]string, error) {
 	var ret = make(map[int32][]string)
 	if str == "" {
-		return ret
+		return ret, nil
 	}
 
 	tmp := strings.Split(str, ";")
@@ -268,21 +280,21 @@ func ToListStringMap(str string) map[int32][]string {
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		ret[int32(index)] = value
 
 	}
 
-	return ret
+	return ret, nil
 }
 
 // 转化成map[int32]float32
-func ToFloatMap(str string) map[int32]float32 {
+func ToFloatMap(str string) (map[int32]float32, error) {
 	var ret = make(map[int32]float32)
 	if str == "" {
-		return ret
+		return ret, nil
 	}
 
 	tmp := strings.Split(str, ";")
@@ -295,26 +307,26 @@ func ToFloatMap(str string) map[int32]float32 {
 
 		j, err := strconv.ParseFloat(tmp1[1], 10)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		ret[int32(index)] = float32(j)
 
 	}
 
-	return ret
+	return ret, nil
 }
 
 // 转化成map[int32][]int32
-func ToListIntMap(str string) map[int32][]int32 {
+func ToListIntMap(str string) (map[int32][]int32, error) {
 	var ret = make(map[int32][]int32)
 	if str == "" {
-		return ret
+		return ret, nil
 	}
 
 	tmp := strings.Split(str, ";")
@@ -330,28 +342,28 @@ func ToListIntMap(str string) map[int32][]int32 {
 		for _, val := range value {
 			j, err := strconv.ParseInt(val, 10, 32)
 			if err != nil {
-				klog.Fatal(err)
+				return nil, err
 			}
 			arr = append(arr, int32(j))
 		}
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		ret[int32(index)] = arr
 
 	}
 
-	return ret
+	return ret, nil
 }
 
 // 转化成map[int32][]float32
-func ToListFloatMap(str string) map[int32][]float32 {
+func ToListFloatMap(str string) (map[int32][]float32, error) {
 	var ret = make(map[int32][]float32)
 	if str == "" {
-		return ret
+		return ret, nil
 	}
 
 	tmp := strings.Split(str, ";")
@@ -364,19 +376,19 @@ func ToListFloatMap(str string) map[int32][]float32 {
 		for _, val := range value {
 			j, err := strconv.ParseFloat(val, 10)
 			if err != nil {
-				klog.Fatal(err)
+				return nil, err
 			}
 			arr = append(arr, float32(j))
 		}
 
 		index, err := strconv.ParseInt(tmp1[0], 10, 32)
 		if err != nil {
-			klog.Fatal(err)
+			return nil, err
 		}
 
 		ret[int32(index)] = arr
 
 	}
 
-	return ret
+	return ret, nil
 }
