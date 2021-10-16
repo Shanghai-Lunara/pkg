@@ -9,7 +9,8 @@ import (
 )
 
 type Claims struct {
-	UserId   int32  `json:"userId"`
+	Id       int32  `json:"id"`
+	Uid      string `json:"uid"`
 	Snapshot string `json:"snapshot"`
 	jwt.StandardClaims
 }
@@ -22,10 +23,11 @@ const Issuer = "Lunara-Issuer"
 var secretKey interface{}
 var tokenExpiration int64
 
-func Generate(userId int32, snapshot string) (string, error) {
+func Generate(id int32, uid, snapshot string) (string, error) {
 	now := time.Now()
 	claims := Claims{
-		UserId:   userId,
+		Id:       id,
+		Uid:      uid,
 		Snapshot: snapshot,
 		StandardClaims: jwt.StandardClaims{
 			Audience:  "",
