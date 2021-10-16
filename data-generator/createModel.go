@@ -8,9 +8,11 @@ import (
 	"k8s.io/klog/v2"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 )
 
 var (
@@ -20,7 +22,7 @@ var (
 )
 
 // xlsx 类型转 go
-var typeMap = map[string]string{
+var TypeMap = map[string]string{
 	"int":                          "int32",
 	"string":                       "string",
 	"float":                        "float32",
@@ -98,7 +100,7 @@ func Format(fileName string, arr [][]string, f *os.File) {
 
 		jsonName := strings.ToLower(arr[0][i])
 		vname := returnName(jsonName)
-		tname := typeMap[arr[1][i]]
+		tname := TypeMap[arr[1][i]]
 		writeString = fmt.Sprintf("\t%-15s %-20s `json:\"%s\" protobuf:\"%s,%d,opt,name=%s\"`\n", vname, tname, jsonName, proMap[tname], protoIndex, jsonName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 		protoIndex += 1
@@ -150,20 +152,40 @@ func CreatModel(strDir, souDir, goFile, jsDir string) {
 
 	fileMap := GetFileMap(sourceDir)
 
-	klog.Info("Create Model START")
-	for sheetName, f := range fileMap {
-		klog.Info(sheetName, "    start")
-		rows, err := f.GetRows("Sheet1")
-		klog.Info("rows: ", rows[0:2])
-		// 生成 struct
-		ToStruct(sheetName, rows[0:2])
-		// 将filename 记录到structMap中
-		structMap = append(structMap, sheetName)
-		if err != nil {
-			klog.Fatal(err)
+	filepath.Walk(structDir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
 		}
-		klog.Info(sheetName, "    end")
+		name := info.Name()
+		if _, ok := fileMap[name[:strings.LastIndex(name, ".")]]; !ok {
+			if name == "doc.go" {
+				return nil
+			}
+			os.Remove(fmt.Sprintf("%s/%s", structDir, name))
+		}
+		return nil
+	})
+
+	klog.Info("Create Model START")
+	wg := sync.WaitGroup{}
+	wg.Add(len(fileMap))
+	for k, v := range fileMap {
+		go func(sheetName string, f *excelize.File) {
+			defer wg.Done()
+			klog.Info(sheetName, "    start")
+			rows, err := f.GetRows("Sheet1")
+			// 生成 struct
+			ToStruct(sheetName, rows[0:2])
+			// 将filename 记录到structMap中
+			structMap = append(structMap, sheetName)
+			if err != nil {
+				klog.Error("rows: ", rows[0:2])
+				klog.Fatal(err)
+			}
+			klog.Info(sheetName, "    end")
+		}(k, v)
 	}
+	wg.Wait()
 	sort.Strings(structMap)
 	klog.Info("Create Model END")
 	klog.Info(structMap)
@@ -194,6 +216,7 @@ func GetFileMap(souDir string) map[string]*excelize.File {
 		} else {
 			f, err := excelize.OpenFile(souDir + "/" + file.Name())
 			if err != nil {
+				klog.Info(file.Name())
 				klog.Fatal(err)
 			}
 			sheetName := getSheet(file.Name())
@@ -316,13 +339,16 @@ func createStructMap() {
 	defer f.Close()
 
 	klog.Info("structMap: ", structMap)
-
+	klog.Info(len(structMap))
 	for _, val := range structMap {
 		name := strings.ToUpper(val[0:1]) + val[1:]
-		klog.Info(name)
+		klog.Info(val)
 		writeString = fmt.Sprintf("\t RegStruct[\"%s\"] = %s\n", val, name+"{}")
-		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
+		if _, err := io.WriteString(f, writeString); err != nil {
+			klog.Error("write struct map fail. sheet: %s, err: %s", val, err.Error())
+		}
+
 	}
 	writeString = "\n\t return RegStruct \n}"
-	_, _ = io.WriteString(f, writeString) //写入文件(字符串)
+	_, _ = io.WriteString(f, writeString)
 }
