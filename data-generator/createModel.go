@@ -322,7 +322,7 @@ func (d *Data) runAll() {`
 	for _, val := range structMap {
 		strByte := []byte(val)
 		upperName := strings.ToUpper(string(strByte[0:1])) + string(strByte[1:])
-		writeString = fmt.Sprintf(loadTemplate, upperName, keyTypeMap[val], val, upperName, upperName)
+		writeString = fmt.Sprintf(loadTemplate, upperName, val, keyTypeMap[val], upperName, upperName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 		runAllTemplate += fmt.Sprintf("\n\td.load%s()", upperName)
 	}
