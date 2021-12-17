@@ -52,6 +52,7 @@ var proMap = map[string]string{
 
 // 生成 structs 用的map
 var structMap []string
+var keyTypeMap = make(map[string]string)
 
 func checkFileIsExist(filename string) bool {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
@@ -103,6 +104,9 @@ func Format(fileName string, arr [][]string, f *os.File) {
 		tname := TypeMap[arr[1][i]]
 		writeString = fmt.Sprintf("\t%-15s %-20s `json:\"%s\" protobuf:\"%s,%d,opt,name=%s\"`\n", vname, tname, jsonName, proMap[tname], protoIndex, jsonName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
+		if jsonName == "id" {
+			keyTypeMap[fileName] = tname
+		}
 		protoIndex += 1
 	}
 
@@ -239,7 +243,8 @@ func createStructs() {
 
 	for i, val := range structMap {
 		name := strings.ToUpper(val[0:1]) + val[1:]
-		writeString = fmt.Sprintf("\t%-25s %-35s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, "map[int32]*"+name, val, i+1, val)
+		print(val)
+		writeString = fmt.Sprintf("\t%-25s map[%s]*%s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, keyTypeMap[val], name, val, i+1, val)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 	}
 	writeString = "}"

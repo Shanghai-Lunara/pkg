@@ -24,8 +24,8 @@ func newStruct(mod string) interface{} {
 	}
 }
 
-func ToArray(fileName string, arr [][]string) map[int32]interface{} {
-	var Employees = make(map[int32]interface{})
+func ToArray(fileName string, arr [][]string) map[string]interface{} {
+	var Employees = make(map[string]interface{})
 
 	for _, row := range arr[4:] {
 		if len(row) == 0 {
@@ -45,7 +45,7 @@ func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 		newValue.Set(getValue.Elem())
 		//klog.Info("type newValue: ", reflect.TypeOf(newValue))
 
-		var id int32
+		var id string
 
 		j := 0
 		for i := 0; i < len(row); i++ {
@@ -62,12 +62,10 @@ func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 			var value interface{}
 			var err error = nil
 			rowValue := row[i]
+
 			switch field.Type.String() {
 			case "int32":
 				value, err = ToInt(rowValue)
-				if i == 0 {
-					id = value.(int32)
-				}
 			case "string":
 				value = row[i]
 			case "float32":
@@ -91,7 +89,9 @@ func ToArray(fileName string, arr [][]string) map[int32]interface{} {
 			case "map[int32]float32":
 				value, err = ToFloatMap(rowValue)
 			}
-
+			if i == 0 {
+				id = rowValue
+			}
 			if err != nil {
 				klog.Errorln(err)
 				klog.Errorf("当前行: 表: %s\tid: %d\t列: %s\t值: %s", fileName, id, field.Name, rowValue)
