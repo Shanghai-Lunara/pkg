@@ -52,7 +52,7 @@ var proMap = map[string]string{
 
 // 生成 structs 用的map
 var structMap []string
-var keyTypeMap = make(map[string]string)
+var keyTypeMap = sync.Map{}
 
 func checkFileIsExist(filename string) bool {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
@@ -105,7 +105,7 @@ func Format(fileName string, arr [][]string, f *os.File) {
 		writeString = fmt.Sprintf("\t%-15s %-20s `json:\"%s\" protobuf:\"%s,%d,opt,name=%s\"`\n", vname, tname, jsonName, proMap[tname], protoIndex, jsonName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 		if jsonName == "id" {
-			keyTypeMap[fileName] = tname
+			keyTypeMap.Store(fileName, tname)
 		}
 		protoIndex += 1
 	}
@@ -243,8 +243,11 @@ func createStructs() {
 
 	for i, val := range structMap {
 		name := strings.ToUpper(val[0:1]) + val[1:]
-		print(val)
-		writeString = fmt.Sprintf("\t%-25s map[%s]*%s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, keyTypeMap[val], name, val, i+1, val)
+		kt, ok := keyTypeMap.Load(val)
+		if !ok {
+			klog.Fatal("key type not found")
+		}
+		writeString = fmt.Sprintf("\t%-25s map[%s]*%s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, kt, name, val, i+1, val)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 	}
 	writeString = "}"
@@ -322,7 +325,11 @@ func (d *Data) runAll() {`
 	for _, val := range structMap {
 		strByte := []byte(val)
 		upperName := strings.ToUpper(string(strByte[0:1])) + string(strByte[1:])
-		writeString = fmt.Sprintf(loadTemplate, upperName, val, keyTypeMap[val], upperName, upperName)
+		kt, ok := keyTypeMap.Load(val)
+		if !ok {
+			klog.Fatal("key type not found")
+		}
+		writeString = fmt.Sprintf(loadTemplate, upperName, val, kt, upperName, upperName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
 		runAllTemplate += fmt.Sprintf("\n\td.load%s()", upperName)
 	}
