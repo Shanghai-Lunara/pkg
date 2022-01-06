@@ -94,7 +94,10 @@ func ToArray(fileName string, arr [][]string) map[string]interface{} {
 			}
 			if err != nil {
 				klog.Errorln(err)
-				klog.Errorf("当前行: 表: %s\tid: %d\t列: %s\t值: %s", fileName, id, field.Name, rowValue)
+				klog.Errorf("↓↓↓↓数值生成发生错误")
+				klog.Errorf("↓↓↓↓数值生成发生错误")
+				klog.Errorf("出错位置: \t表: %s\tid: %s\t列(字段): %s\t值: %s", fileName, id, field.Name, rowValue)
+				klog.Errorf("↑↑↑↑数值生成发生错误")
 				klog.Errorf("↑↑↑↑数值生成发生错误")
 				os.Exit(1)
 			}
