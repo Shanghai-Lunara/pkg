@@ -19,6 +19,7 @@ var (
 	structDir string
 	sourceDir string
 	genGoFile string
+	ignoreReg string
 )
 
 // xlsx 类型转 go
@@ -147,12 +148,13 @@ func returnName(str string) string {
 	return str
 }
 
-func CreatModel(strDir, souDir, goFile, jsDir string) {
+func CreatModel(strDir, souDir, goFile, jsDir string, ignore string) {
 
 	structDir = strDir
 	sourceDir = souDir
 	genGoFile = goFile
 	jsonDir = jsDir
+	ignoreReg = ignore
 
 	fileMap := GetFileMap(sourceDir)
 
@@ -215,17 +217,21 @@ func GetFileMap(souDir string) map[string]*excelize.File {
 	var fileMap = map[string]*excelize.File{}
 
 	for _, file := range files {
-		if strings.HasPrefix(path.Base(file.Name()), "#") || path.Ext(file.Name()) != ".xlsx" || path.Base(file.Name()) == "Character.xlsx" || path.Base(file.Name()) == "Error.xlsx" || path.Base(file.Name()) == "LanguageCN.xlsx" || path.Base(file.Name()) == "Calendar.xlsx" || path.Base(file.Name()) == "Plot.xlsx" || path.Base(file.Name()) == "Dialog.xlsx" {
+		fname := path.Base(file.Name())
+		if strings.HasPrefix(path.Base(fname), "#") || path.Ext(file.Name()) != ".xlsx" {
 			continue
-		} else {
-			f, err := excelize.OpenFile(souDir + "/" + file.Name())
-			if err != nil {
-				klog.Info(file.Name())
-				klog.Fatal(err)
-			}
-			sheetName := getSheet(file.Name())
-			fileMap[sheetName] = f
 		}
+		if matched, _ := regexp.MatchString(ignoreReg, fname); matched {
+			continue
+		}
+		f, err := excelize.OpenFile(souDir + "/" + file.Name())
+		if err != nil {
+			klog.Info(file.Name())
+			klog.Fatal(err)
+		}
+		sheetName := getSheet(file.Name())
+		fileMap[sheetName] = f
+
 	}
 	return fileMap
 }
@@ -245,7 +251,7 @@ func createStructs() {
 		name := strings.ToUpper(val[0:1]) + val[1:]
 		kt, ok := keyTypeMap.Load(val)
 		if !ok {
-			klog.Fatal("key type not found")
+			klog.Fatal("key type not found:", "key:", val)
 		}
 		writeString = fmt.Sprintf("\t%-25s map[%s]*%s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, kt, name, val, i+1, val)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
