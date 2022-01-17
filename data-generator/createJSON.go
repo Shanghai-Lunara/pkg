@@ -113,9 +113,10 @@ func ToArray(fileName string, arr [][]string) map[string]interface{} {
 	return Employees
 }
 
-func CreateJSON(jsDir, souDir string, s map[string]interface{}) {
+func CreateJSON(jsDir, souDir string, s map[string]interface{}, ignore string) {
 	structure = s
 	jsonDir = jsDir
+	ignoreReg = ignore
 
 	klog.Info("Create JSON START")
 	fileMap := GetFileMap(souDir)
