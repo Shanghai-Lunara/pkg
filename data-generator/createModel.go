@@ -221,9 +221,12 @@ func GetFileMap(souDir string) map[string]*excelize.File {
 		if strings.HasPrefix(path.Base(fname), "#") || path.Ext(file.Name()) != ".xlsx" {
 			continue
 		}
-		if matched, _ := regexp.MatchString(ignoreReg, fname); matched {
-			continue
+		if ignoreReg != "" {
+			if matched, _ := regexp.MatchString(ignoreReg, fname); matched {
+				continue
+			}
 		}
+
 		f, err := excelize.OpenFile(souDir + "/" + file.Name())
 		if err != nil {
 			klog.Info(file.Name())
