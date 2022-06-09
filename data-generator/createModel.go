@@ -336,7 +336,7 @@ func (d *Data) runAll() {`
 		upperName := strings.ToUpper(string(strByte[0:1])) + string(strByte[1:])
 		kt, ok := keyTypeMap.Load(val)
 		if !ok {
-			klog.Fatal("key type not found")
+			klog.Fatal("key type not found", "want", val, "upperName", upperName)
 		}
 		writeString = fmt.Sprintf(loadTemplate, upperName, val, kt, upperName, upperName)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
