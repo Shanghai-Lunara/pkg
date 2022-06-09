@@ -254,7 +254,7 @@ func createStructs() {
 		name := strings.ToUpper(val[0:1]) + val[1:]
 		kt, ok := keyTypeMap.Load(val)
 		if !ok {
-			klog.Fatal("key type not found:", "key:", val)
+			klog.Fatal("key type not found:", "key:", val, "file", name)
 		}
 		writeString = fmt.Sprintf("\t%-25s map[%s]*%s `json:\"%s\" protobuf:\"bytes,%d,opt,name=%s\"`\n", name, kt, name, val, i+1, val)
 		_, _ = io.WriteString(f, writeString) //写入文件(字符串)
