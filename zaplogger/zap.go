@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -14,6 +15,15 @@ var sugar *zap.SugaredLogger
 func init() {
 	var err error
 	logger, err = NewProductionConfig().Build()
+	if err != nil {
+		log.Panic(err)
+	}
+	sugar = logger.Sugar()
+}
+
+func Reset(cfg zap.Config) {
+	var err error
+	logger, err = cfg.Build()
 	if err != nil {
 		log.Panic(err)
 	}
@@ -32,19 +42,17 @@ func Logger() *zap.Logger {
 	return logger
 }
 
-const EnvZapEncoding = "ENV_ZAP_ENCODING"
+const (
+	EnvZapEncoding = "ENV_ZAP_ENCODING"
+	EnvZapLevel    = "ENV_ZAP_LEVEL"
+)
 
 const (
 	EncodingJson    = "json"
 	EncodingConsole = "console"
 )
 
-// NewProductionConfig is a reasonable production logging configuration.
-// Logging is enabled at InfoLevel and above.
-//
-// It uses a JSON encoder, writes to standard error, and enables sampling.
-// Stacktraces are automatically included on logs of ErrorLevel and above.
-func NewProductionConfig() zap.Config {
+func getEncodingFromEnv() string {
 	encoding := os.Getenv(EnvZapEncoding)
 	switch encoding {
 	case "", EncodingConsole:
@@ -54,14 +62,40 @@ func NewProductionConfig() zap.Config {
 	default:
 		encoding = EncodingConsole
 	}
+	return encoding
+}
+
+func getLevelFromEnv() zapcore.Level {
+	lv := os.Getenv(EnvZapLevel)
+	if len(lv) == 0 {
+		panic("empty ENV_ZAP_LEVEL")
+	}
+	t, err := strconv.ParseInt(lv, 10, 8)
+	if err != nil {
+		panic(err)
+	}
+	a := zapcore.Level(int8(t))
+	if a < zapcore.DebugLevel || a > zapcore.FatalLevel {
+		panic("invalid ENV_ZAP_LEVEL")
+	}
+	return a
+}
+
+// NewProductionConfig is a reasonable production logging configuration.
+// Logging is enabled at InfoLevel and above.
+//
+// It uses a JSON encoder, writes to standard error, and enables sampling.
+// Stacktraces are automatically included on logs of ErrorLevel and above.
+func NewProductionConfig() zap.Config {
+
 	return zap.Config{
-		Level:       zap.NewAtomicLevelAt(zap.InfoLevel),
-		Development: false,
+		Level:       zap.NewAtomicLevelAt(getLevelFromEnv()),
+		Development: true,
 		Sampling: &zap.SamplingConfig{
 			Initial:    100,
 			Thereafter: 100,
 		},
-		Encoding:         encoding,
+		Encoding:         getEncodingFromEnv(),
 		EncoderConfig:    NewProductionEncoderConfig(),
 		OutputPaths:      []string{"stderr"},
 		ErrorOutputPaths: []string{"stderr"},
@@ -80,10 +114,18 @@ func NewProductionEncoderConfig() zapcore.EncoderConfig {
 		MessageKey:     "msg",
 		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     EpochTimeEncoder,
-		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeLevel:    zapcore.CapitalLevelEncoder,
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.StringDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
+		// Keys can be anything except the empty string.
+		//TimeKey:        "T",
+		//LevelKey:       "L",
+		//NameKey:        "N",
+		//CallerKey:      "C",
+		//FunctionKey:    zapcore.OmitKey,
+		//MessageKey:     "M",
+		//StacktraceKey:  "S",
 	}
 }
 
