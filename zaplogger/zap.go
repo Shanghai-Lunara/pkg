@@ -68,7 +68,7 @@ func getEncodingFromEnv() string {
 func getLevelFromEnv() zapcore.Level {
 	lv := os.Getenv(EnvZapLevel)
 	if len(lv) == 0 {
-		panic("empty ENV_ZAP_LEVEL")
+		return zapcore.InfoLevel
 	}
 	t, err := strconv.ParseInt(lv, 10, 8)
 	if err != nil {
