@@ -7,13 +7,16 @@ require (
 	github.com/antlinker/go-cmap v0.0.0-20160407022646-0c5e57012e96
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/go-querystring v1.1.0
+	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.23.0
 	k8s.io/klog/v2 v2.4.0
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v0.2.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/richardlehane/mscfb v1.0.3 // indirect
 	github.com/richardlehane/msoleps v1.0.1 // indirect
 	github.com/xuri/efp v0.0.0-20201016154823-031c29024257 // indirect
@@ -22,4 +25,5 @@ require (
 	golang.org/x/crypto v0.0.0-20201012173705-84dcc777aaee // indirect
 	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0 // indirect
 	golang.org/x/text v0.3.3 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -1,8 +1,11 @@
 package zaplogger
 
 import (
-	"go.uber.org/zap"
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func Test_Development(t *testing.T) {
@@ -24,4 +27,19 @@ func Test_Development(t *testing.T) {
 	Sugar().Debug("1111")
 	Sugar().Warn("2222")
 	Sugar().Info("3333")
+}
+
+func Test_getLevelFromEnv(t *testing.T) {
+	err := os.Setenv(EnvZapLevel, "-1")
+	assert.NoError(t, err)
+
+	lv := getLevelFromEnv()
+	assert.Equal(t, zap.DebugLevel, lv)
+	assert.NotEqual(t, zap.InfoLevel, lv)
+
+	err = os.Setenv(EnvZapLevel, "2")
+	assert.NoError(t, err)
+	lv = getLevelFromEnv()
+	assert.Equal(t, zap.ErrorLevel, lv)
+	assert.NotEqual(t, zap.InfoLevel, lv)
 }
