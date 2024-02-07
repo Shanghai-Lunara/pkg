@@ -9,7 +9,7 @@ import (
 )
 
 type Claims struct {
-	UserId   int    `json:"userId"`
+	UserId   int64  `json:"userId"`
 	Username string `json:"username"`
 	IsAdmin  bool   `json:"isAdmin"`
 	jwt.StandardClaims
@@ -23,10 +23,10 @@ const Issuer = "Lunara-Issue"
 var secretKey interface{}
 var tokenExpiration int64
 
-func Generate(username string, isAdmin bool) (string, error) {
+func Generate(username string, id int64, isAdmin bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
-		UserId:   0,
+		UserId:   id,
 		Username: username,
 		IsAdmin:  isAdmin,
 		StandardClaims: jwt.StandardClaims{
